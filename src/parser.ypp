@@ -1,0 +1,424 @@
+%code requires {
+    #include <iostream>
+    #include <string>
+}
+
+%{
+    #include <cassert>
+    #include <iostream>
+    #include <string>
+    #include <array>
+    #include <string>
+    #include <vector>
+    #include <map>
+
+    #include "nodes/NodesLib.hpp"
+
+    #include "lexer.cpp"
+
+    extern "C" int yylex(void);
+    extern int yylineno;
+    void yyerror(const char* s) {
+        std::cerr << s << std::endl;
+    }
+
+    ProgramNode* program;
+
+    namespace {
+        std::vector<std::pair<std::string, type_ids>> function_local_vars;
+        params_def_list function_parameters;
+        std::map<std::array<std::string, 2>, bool> conv_table = {
+            {{"int", "long"}, true},
+            {{"long", "int"}, true}
+        };
+
+        inline type_ids stotid(const std::string& _s) {
+            if (_s == "void") {
+                return type_ids::_void;
+            }
+            else if (_s == "char") {
+                return type_ids::_char;
+            }
+            else if (_s == "long") {
+                return type_ids::_long;
+            }
+            else if (_s == "int") {
+                return type_ids::_int;
+            }
+            else {
+                return type_ids();
+            }
+        }
+        inline std::string tidtos(type_ids _tid) {
+            if (_tid == type_ids::_void) {
+                return "void";
+            }
+            else if (_tid == type_ids::_char) {
+                return "char";
+            }
+            else if (_tid == type_ids::_long) {
+                return "long";
+            }
+            else if (_tid == type_ids::_int) {
+                return "int";
+            }
+            else {
+                return "### ERROR ###";
+            }
+        }
+
+        bool is_var_defined(const std::string _s) {
+            for (const auto& _vdef : function_local_vars) {
+                if (_vdef.first == _s) {
+                    return true;
+                }
+            }
+            for (const auto& _vdef : function_parameters) {
+                if (_vdef.first == _s) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        std::string fetch_var_type(std::string _vname) {
+            for (const auto& e : function_local_vars) {
+                if (e.first == _vname) {
+                    return tidtos(e.second);
+                }
+            }
+            return "### ERROR ###";
+        }
+
+        void fatal_exit(ProgramNode*& root) {
+            if (root) {
+                root->delete_mem();
+                delete root;
+                std::exit(1);
+            } else {
+                std::exit(2);
+            }
+        }
+
+        inline bool is_implicit_conv_valid(std::string t1, std::string t2) {
+            return (conv_table.count({t1, t2}) ? conv_table.at({t1, t2}) : false) || t1 == t2;
+        }
+    }
+%}
+%define parse.error verbose
+
+%union{
+    // lex vars
+    std::string *idName, *typeBuffer;
+    int intVal;
+    float floatVal;
+    char charVal;
+
+    // bison vars
+    Node* node;
+    ExpNode* expNode;
+    StatementNode* statementNode;
+    std::pair<std::string, funcsym>* functionNode;
+
+    std::pair<std::string, ExpNode*>* varSet;
+    std::pair<std::string, type_ids>* func_decl;
+    std::vector<ExpNode*>* arg_list;
+    std::vector<StatementNode>* scopeVector;
+}
+
+%start program
+
+%token <idName> IDENTIFIER
+%token <intVal> INT_LITTERAL
+%token <floatVal> FLOAT_LITTERAL
+%token <charVal> CHAR
+%token <typeBuffer> TYPE
+
+// prototypes
+%type <func_decl> func_declaration
+%type <arg_list> arguments_list
+// scopes
+%type <scopeVector> scope bordered_scope func_scope
+// basic nodes
+%type <functionNode> func_body
+%type <expNode> exp
+%type <statementNode> statement
+%type <node> program
+// other
+%type <varSet> assignment initialization
+
+// what's left
+%left NATIVE_SCOPE
+%left COMMA
+%left PLUS MINUS
+%left MULT DIV
+%left LPAREN RPAREN
+%left EQUAL
+%left SEMI
+%left RETURN
+%left LCURL RCURL
+
+%%
+program:
+    {
+        program = new ProgramNode(yylineno);
+    }
+    | program statement {
+        assert(program);
+        std::cerr << "At line " << yylineno << ": unexpected statement in non-function scope\n";
+        fatal_exit(program);
+    }
+    | program func_body {
+        assert(program);
+
+        funcsym fsym = $2->second;
+        for (const auto& _vdef : function_local_vars) {
+            fsym.addVarSym(_vdef.first, _vdef.second);
+        }
+        program->addFunction($2->first, fsym);
+
+        function_local_vars.clear();
+
+        delete $2;
+    }
+    ;
+
+statement:
+    assignment SEMI         { $$ = new StatementNode(yylineno, $1->second, $1->first); delete $1; }
+    | initialization SEMI   { $$ = new StatementNode(yylineno, $1->second, $1->first); delete $1; }
+    | exp SEMI              { $$ = new StatementNode(yylineno, $1, ""); }
+    | assignment            { std::cerr << "At line " << yylineno << ": missing semicolon ';' at end of statement" << std::endl; fatal_exit(program); }
+    | initialization        { std::cerr << "At line " << yylineno << ": missing semicolon ';' at end of statement" << std::endl; fatal_exit(program); }
+    | exp                   { std::cerr << "At line " << yylineno << ": missing semicolon ';' at end of statement" << std::endl; fatal_exit(program); }
+    ;
+
+assignment: 
+    IDENTIFIER EQUAL exp {
+        if (!is_var_defined(*$1)) {
+            std::cerr << "line " << yylineno << ": undefined variable: " << *$1 << std::endl;
+            fatal_exit(program);
+        } else {
+            std::string var_type = fetch_var_type(*$1);
+
+            if (is_implicit_conv_valid(var_type, $3->getRetType())) {
+                $$ = new std::pair(*$1, $3);
+            } else {
+                std::cerr << "line " << yylineno << ": can't assign a value of type " << $3->getRetType() << " to a variable of type " << var_type << std::endl;
+                fatal_exit(program);
+            }
+        }
+        delete $1;
+    }
+    ;
+initialization: 
+    TYPE IDENTIFIER EQUAL exp {
+        if (is_var_defined(*$2)) {
+            std::cerr << "line " << yylineno << ": redefinition of variable: " << *$2 << std::endl;
+            fatal_exit(program);
+        } else {
+            if (*$1 == "void") {
+                std::cerr << "line " << yylineno << ": illegal creation of a 'void' variable '" << *$2 << "'" << std::endl;
+                fatal_exit(program);
+            }
+            else if (is_implicit_conv_valid(*$1, $4->getRetType())) {
+                $$ = new std::pair(*$2, $4);
+                function_local_vars.emplace_back(*$2, stotid(*$1));
+            } else {
+                std::cerr << "line " << yylineno << ": can't assign a value of type " << $4->getRetType() << " to a variable of type " << *$1 << std::endl;
+                fatal_exit(program);
+            }
+        }
+
+        delete $1;
+        delete $2; 
+    }
+    ;
+
+exp:
+    IDENTIFIER LPAREN arguments_list RPAREN {
+        if (is_var_defined(*$1)) {
+            std::cerr << "line " << yylineno << ": can't call non-callable object: " << *$1 << "\n";
+            fatal_exit(program);
+        } else if (!program->getFunctions().count(*$1)) {
+            std::cerr << "line " << yylineno << ": undefined callable object: " << *$1 << "\n";
+            fatal_exit(program);
+        } else if (program->getFunctions().at(*$1).getParamsList().size() != $3->size()) {
+            std::cerr << "line " << yylineno << ": wrong number of arguments were provided when calling function: " << *$1 << "\n";
+            fatal_exit(program);
+        }
+
+        for (size_t i = 0; i < $3->size(); ++i) {
+            if ((*$3)[i]->getRetType() != tidtos(program->getFunctions().at(*$1).getParamsList()[i].second)) {
+                std::cerr << "line " << yylineno << ": wrong type of argument was provided (arg " << i + 1 << ") when calling function: " << *$1 << "\n";
+                fatal_exit(program);
+            }
+        }
+
+        $$ = new FunctionCall(yylineno, *$1, *$3, tidtos(program->getFunctions().at(*$1).getRetType()));
+        delete $1;
+        delete $3;
+    }
+    | IDENTIFIER LPAREN RPAREN {
+        if (is_var_defined(*$1)) {
+            std::cerr << "line " << yylineno << ": can't call non-callable object: " << *$1 << "\n";
+            fatal_exit(program);
+        } else if (!program->getFunctions().count(*$1)) {
+            std::cerr << "line " << yylineno << ": undefined callable object: " << *$1 << "\n";
+            fatal_exit(program);
+        } else if (!program->getFunctions().at(*$1).getParamsList().empty()) {
+            std::cerr << "line " << yylineno << ": too few arguments were provided when calling function: " << *$1 << "\n";
+            fatal_exit(program);
+        }
+        
+        std::vector<ExpNode*> empty_arg_list;
+        $$ = new FunctionCall(yylineno, *$1, empty_arg_list, tidtos(program->getFunctions().at(*$1).getRetType()));
+        delete $1;
+    }
+    | IDENTIFIER {
+        if (!is_var_defined(*$1)) {
+            std::cerr << "line " << yylineno << ": undefined identifier: " << *$1 << std::endl;
+            fatal_exit(program);
+        } else {
+            std::string _st;
+            for (const auto& e : function_local_vars) {
+                if (e.first == *$1) {
+                    _st = tidtos(e.second);
+                    break;
+                }
+            }
+
+            $$ = new IdentifierNode(yylineno, *$1, _st);
+        }
+        delete $1;
+    }
+    | INT_LITTERAL   { $$ = new IntegerNode(yylineno, $1); }
+    | FLOAT_LITTERAL { $$ = new FloatNode(yylineno, $1); }
+    | CHAR           { $$ = new CharNode(yylineno, $1); }
+    | exp PLUS exp {
+        if (!is_implicit_conv_valid($1->getRetType(), $3->getRetType())) {
+            std::cout << "line " << yylineno << ": can't add two different types together" << std::endl;
+            fatal_exit(program);
+        }
+        $$ = new MathNode(yylineno, $1, $3, '+', $1->getRetType());
+    }
+    | exp MINUS exp {
+        if (!is_implicit_conv_valid($1->getRetType(), $3->getRetType())) {
+            std::cout << "line " << yylineno << ": can't substract two different types together" << std::endl;
+            fatal_exit(program);
+        }
+        $$ = new MathNode(yylineno, $1, $3, '-', $1->getRetType());
+    }
+    | exp MULT exp {
+        if (!is_implicit_conv_valid($1->getRetType(), $3->getRetType())) {
+            std::cout << "line " << yylineno << ": can't multiply two different types together" << std::endl;
+            fatal_exit(program);
+        }
+        $$ = new MathNode(yylineno, $1, $3, '*', $1->getRetType());
+    }
+    | exp DIV exp {
+        if (!is_implicit_conv_valid($1->getRetType(), $3->getRetType())) { 
+            std::cout << "line " << yylineno << ": can't divide two different types together" << std::endl;
+            fatal_exit(program);
+        }
+        $$ = new MathNode(yylineno, $1, $3, '/', $1->getRetType());
+    }
+    | LPAREN exp RPAREN {
+        $$ = $2;
+    }
+    ;
+
+arguments_list:
+    exp {
+        $$ = new std::vector<ExpNode*>({$1});
+    }
+    | arguments_list COMMA exp {
+        $$->push_back($3);
+    }
+    ;
+parameters_list:
+    TYPE IDENTIFIER {
+        if (*$1 == "void") {
+            std::cerr << "line " << yylineno << ": illegal declaration of a 'void' parameter '" << *$2 << "'" << std::endl;
+            fatal_exit(program);
+        }
+        else if (is_var_defined(*$2)) {
+            std::cerr << "line " << yylineno << ": redefinition of parameter: " << *$2 << std::endl;
+            fatal_exit(program);
+        }
+        function_parameters.emplace_back(*$2, stotid(*$1));
+
+        delete $1;
+        delete $2;
+    }
+    | parameters_list COMMA TYPE IDENTIFIER {
+        if (*$3 == "void") {
+            std::cerr << "line " << yylineno << ": illegal declaration of a 'void' parameter '" << *$4 << "'" << std::endl;
+            fatal_exit(program);
+        }
+        else if (is_var_defined(*$4)) {
+            std::cerr << "line " << yylineno << ": redefinition of parameter: " << *$4 << std::endl;
+            fatal_exit(program);
+        }
+        function_parameters.emplace_back(*$4, stotid(*$3));
+
+        delete $3;
+        delete $4;
+    }
+    ;
+
+func_declaration:
+    TYPE IDENTIFIER LPAREN parameters_list RPAREN {
+        std::string s_type = *$1;
+
+        type_ids def_type = stotid(s_type);
+        
+        $$ = new std::pair(*$2, def_type);
+
+        delete $1;
+        delete $2;
+    }
+    | TYPE IDENTIFIER LPAREN RPAREN {
+        std::string s_type = *$1;        
+
+        type_ids def_type = stotid(s_type);
+
+        $$ = new std::pair(std::string(*$2), def_type);
+
+        delete $1;
+        delete $2;
+    };
+
+scope:
+    statement {
+        $$ = new std::vector<StatementNode>({*$1});
+    }
+    | scope statement { 
+        $$->push_back(*$2);
+    }    
+    ;
+
+bordered_scope:
+    LCURL scope RCURL { $$ = $2; }
+    ;
+
+func_scope:
+    bordered_scope  { $$ = $1; }
+    | LCURL RCURL   { $$ = new std::vector<StatementNode>; }
+    ;
+
+func_body:
+    func_declaration func_scope {
+        $$ = new std::pair(            
+                $1->first,
+                funcsym($1->second, function_parameters, *$2)
+        );
+
+        function_parameters.clear();
+
+        delete $1;
+        delete $2;
+    }
+    ;
+
+%%
