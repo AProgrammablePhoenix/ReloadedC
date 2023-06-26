@@ -1,5 +1,5 @@
 
-// Generated from src/antlr_grammar/relcgrammar.g4 by ANTLR 4.10.1
+// Generated from src/antlr_grammar/relcgrammar.g4 by ANTLR 4.13.0
 
 #pragma once
 
@@ -12,10 +12,10 @@
 class  relcgrammarParser : public antlr4::Parser {
 public:
   enum {
-    INT_LITERAL = 1, FLOAT_LITERAL = 2, TYPE = 3, NativeProtoDecl = 4, ID = 5, 
-    CHAR = 6, PLUS = 7, MINUS = 8, MULT = 9, DIV = 10, EQUAL = 11, SEMI = 12, 
-    COMMA = 13, LPAREN = 14, RPAREN = 15, LCURL = 16, RCURL = 17, NATIVE_SCOPE = 18, 
-    WS = 19
+    LONG_LITERAL = 1, INT_LITERAL = 2, FLOAT_LITERAL = 3, TYPE = 4, CONST = 5, 
+    NativeProtoDecl = 6, ID = 7, CHAR = 8, PLUS = 9, MINUS = 10, MULT = 11, 
+    DIV = 12, EQUAL = 13, SEMI = 14, COMMA = 15, LPAREN = 16, RPAREN = 17, 
+    LCURL = 18, RCURL = 19, NATIVE_SCOPE = 20, WS = 21
   };
 
   enum {
@@ -125,6 +125,7 @@ public:
   public:
     InitializationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *CONST();
     antlr4::tree::TerminalNode *TYPE();
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *EQUAL();
@@ -141,20 +142,21 @@ public:
   public:
     ExpContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *LPAREN();
+    std::vector<ExpContext *> exp();
+    ExpContext* exp(size_t i);
+    antlr4::tree::TerminalNode *RPAREN();
     Native_callContext *native_call();
     antlr4::tree::TerminalNode *ID();
-    antlr4::tree::TerminalNode *LPAREN();
     Arguments_listContext *arguments_list();
-    antlr4::tree::TerminalNode *RPAREN();
+    antlr4::tree::TerminalNode *LONG_LITERAL();
     antlr4::tree::TerminalNode *INT_LITERAL();
     antlr4::tree::TerminalNode *FLOAT_LITERAL();
     antlr4::tree::TerminalNode *CHAR();
-    std::vector<ExpContext *> exp();
-    ExpContext* exp(size_t i);
-    antlr4::tree::TerminalNode *PLUS();
-    antlr4::tree::TerminalNode *MINUS();
     antlr4::tree::TerminalNode *MULT();
     antlr4::tree::TerminalNode *DIV();
+    antlr4::tree::TerminalNode *PLUS();
+    antlr4::tree::TerminalNode *MINUS();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -202,6 +204,7 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *TYPE();
     antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *CONST();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

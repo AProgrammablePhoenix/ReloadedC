@@ -7,6 +7,7 @@
 #include <tuple>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <fmt/core.h>
 #include <fmt/color.h>
@@ -16,6 +17,23 @@
 
 #include "../nodes/NodesLib.hpp"
 #include "../symbols.hpp"
+
+struct _internal_conversion_t {
+    size_t _size_in  = 0;
+    size_t _size_out = 0;
+
+    bool _right_converted = 0;
+    bool _left_converted = 0;
+
+    bool _is_signed    = false;
+    bool _float_to_int = false;
+    bool _int_to_float = false;
+};
+
+struct _implicit_conversion_t {
+    _internal_conversion_t _conv;
+    bool _left_to_right = false;
+};
 
 class gvisitor {
 public:
@@ -54,12 +72,12 @@ private:
     }
     inline bool is_var_defined(const std::string _s) {
         for (const auto& _vdef : function_local_vars) {
-            if (_vdef.first == _s) {
+            if (_vdef._name == _s) {
                 return true;
             }
         }
         for (const auto& _vdef : function_parameters) {
-            if (_vdef.first == _s) {
+            if (_vdef._name == _s) {
                 return true;
             }
         }
@@ -68,19 +86,75 @@ private:
     }
     inline const std::string& fetch_var_type(std::string _vname, size_t line) {
         for (const auto& e : function_local_vars) {
-            if (e.first == _vname) {
-                return e.second;
+            if (e._name == _vname) {
+                return e._type;
             }
         }
         for (const auto& e : function_parameters) {
-            if (e.first == _vname) {
-                return e.second;
+            if (e._name == _vname) {
+                return e._type;
             }
         }
         report_err("undefined variable: " + _vname, line);
     }
+    inline const _variable_def_t& fetch_var_data(std::string _vname, size_t line) {
+        for (const auto& e : function_local_vars) {
+            if (e._name == _vname) {
+                return e;
+            }
+        }
+        for (const auto& e : function_parameters) {
+            if (e._name == _vname) {
+                return e;
+            }
+        }
+        report_err("undefined variable: " + _vname, line);
+    }
+    inline bool is_implicit_convertible(const std::string& t1, const std::string& t2) {
+        static const std::unordered_set<std::string> primitive_types = { "char", "int", "long" /*"float"*/ };
 
-    std::vector<std::pair<std::string, std::string>> function_local_vars;
+        if ((!primitive_types.contains(t1) || !primitive_types.contains(t2)) && t1 != t2) {
+            return false;
+        }
+
+        return true;
+    }
+    inline _internal_conversion_t get_assignment_implicit_conversion(const std::string& _t_in, const std::string& _t_out) {
+        static const std::unordered_map<std::string, size_t> types_size = {
+            { "char", 1 },
+            { "int", 4},
+            { "long", 8}
+        };
+
+        return _internal_conversion_t {
+            ._size_in = types_size.at(_t_in),
+            ._size_out = types_size.at(_t_out),
+            ._is_signed = true
+        };
+    }
+    inline _implicit_conversion_t get_expression_implicit_conversion(const std::string& _t_left, const std::string& _t_right) {
+        static const std::unordered_map<std::string, size_t> types_precedence = {
+            { "char", 0 },
+            { "int",  1 },
+            { "long", 2 },
+            { "float", 3},
+            { "double", 4}
+        };
+
+        if (types_precedence.at(_t_left) > types_precedence.at(_t_right)) {
+            return _implicit_conversion_t {
+                ._conv = get_assignment_implicit_conversion(_t_right, _t_left),
+                ._left_to_right = false
+            };
+        }
+
+        return _implicit_conversion_t { 
+            ._conv = get_assignment_implicit_conversion(_t_left, _t_right),
+            ._left_to_right = true
+        };
+    }
+
+    std::vector<_variable_def_t> function_local_vars;
     params_def_list function_parameters;
 
     std::unordered_map<std::string, funcproto> prototypes;

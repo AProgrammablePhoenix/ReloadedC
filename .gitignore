@@ -1,2 +1,5 @@
 .vscode/
 build/
+dist/
+src/antlr_grammar/.antlr/
+test.*

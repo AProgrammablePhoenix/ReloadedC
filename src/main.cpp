@@ -3,14 +3,13 @@
 
 #include <filesystem>
 #include <fstream>
-#include <sstream>
 #include <memory>
 #include <vector>
 
 #include <dlfcn.h>
 
 #include "preprocessor.hpp"
-#include "nodes/program_node.hpp"
+#include "nodes/program.hpp"
 #include "nodes/visitor.hpp"
 #include "nodes/NodesLib.hpp"
 
@@ -26,16 +25,6 @@
 
 #include "bytecode_gen/bytecode_gen.hpp"
 
-std::vector<std::string> split_lines(const std::string& s) {
-    std::vector<std::string> ret;
-    
-    std::stringstream ss(s);
-    for (std::string line; std::getline(ss, line);) {
-        ret.emplace_back(line);
-    }
-
-    return ret;
-}
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -44,24 +33,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    void* libc = dlopen("libc.so.6", RTLD_LAZY);
-    if (!libc) {
-        fmt::print(fg(fmt::color::dark_red) | fmt::emphasis::bold, "{}\n",dlerror());
-    }
-
-    std::string content;
-
-    std::ifstream hfile(argv[1]);
-    if (hfile) {
-        size_t content_len = std::filesystem::file_size(argv[1]);
-        content.resize(content_len);
-        hfile.read(content.data(), content_len);
-    } else {
-        fmt::print("{}: couldn't not open file: '{}'\n",
-            fmt::styled("error", fg(fmt::color::red)),
-            argv[1]
-        );
-    }
+    std::string content = read_file(argv[1]);
     auto lines = split_lines(content);
     lines = preprocess_file(lines);
 
@@ -101,10 +73,6 @@ int main(int argc, char* argv[]) {
     std::ofstream output_bytecode(std::string(argv[1]) + ".relexe", std::ios::out | std::ios::binary);
     if (output_bytecode) {
         output_bytecode.write((char*)bytecode.data(), bytecode.size());
-    }
-
-    if (libc) {
-        dlclose(libc);
     }
 
     return 0;

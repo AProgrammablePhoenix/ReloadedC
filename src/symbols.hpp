@@ -1,12 +1,19 @@
 #pragma once
 
-#include "nodes/statement_node.hpp"
+#include "nodes/expressions.hpp"
 
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-typedef std::vector<std::pair<std::string, std::string>> params_def_list;
+struct _variable_def_t {
+    std::string _name;
+    std::string _type;
+
+    bool _isconst = false;
+};
+
+typedef std::vector<_variable_def_t> params_def_list;
 
 class funcsym {
 public:

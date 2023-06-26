@@ -9,9 +9,9 @@
 #include <stack>
 
 namespace {
-    uintmax_t last_disp = 0;
-    std::unordered_map<std::string, uintmax_t> vars_disp;
-    std::ofstream output_file;
+    static uintmax_t last_disp = 0;
+    static std::unordered_map<std::string, uintmax_t> vars_disp;
+    static std::ofstream output_file;
 
     inline uintmax_t compute_type_size(const std::string& _tinfo) {
         if (_tinfo == "void")       // 0 byte
@@ -58,19 +58,19 @@ void Visitor::visit(ProgramNode* node) {
 
         for (size_t i = 0; i < params.size(); ++i) {
             auto& p = params[i];
-            output_file << "//\t Parameter (" << p.second << "): " << p.first << " => located at [" << last_disp << "]\n";
-            vars_disp.insert({p.first, last_disp});
-            last_disp += compute_type_size(p.second);
+            output_file << "//\t Parameter (" << p._type << "): " << p._name << " => located at [" << last_disp << "]\n";
+            vars_disp.emplace(p._name, last_disp);
+            last_disp += compute_type_size(p._type);
         }
         for (const auto& _vdef : f.second.getVarTable()) {
             output_file << "//\t Local var (" << _vdef.second << "): " << _vdef.first << " => located at [" << last_disp << "]\n";
-            vars_disp.insert({_vdef.first, last_disp});
+            vars_disp.emplace(_vdef.first, last_disp);
             last_disp += compute_type_size(_vdef.second);
         }
         output_file << "// Load parameters\n";
         params_def_list::reverse_iterator rit = params.rbegin();
         for (; rit != params.rend(); ++rit) {
-            output_file << "[[BITS" << get_op_size_prefix(rit->second) << "]] " <<  "store " << vars_disp.at(rit->first) << "\n";
+            output_file << "[[BITS" << get_op_size_prefix(rit->_type) << "]] " <<  "store " << vars_disp.at(rit->_name) << "\n";
         }
         for (auto& statement : f.second.getStatements()) {
             statement.accept(*this);
@@ -112,11 +112,33 @@ void Visitor::visit(IdentifierNode* node) {
 void Visitor::visit(IntegerNode* node) {
     output_file << node->getValue() << "\n";
 }
+void Visitor::visit(LongNode* node) {
+    output_file << node->getValue() << "\n";
+}
 void Visitor::visit(FloatNode* node) {
     output_file << node->getValue() << "\n";
 }
 void Visitor::visit(CharNode* node) {
-    output_file << node->getValue() << "\n";
+    output_file << (uint16_t)node->getValue() << "\n";
+}
+void Visitor::visit(ConversionNode* node) {
+    static const std::unordered_map<std::string, std::string> conv_ops_map = {
+        { "char", "secb" },
+        { "int", "secd"},
+        { "long", "secq" }
+    };
+    ExpNode* exp = node->getExp();
+    const auto& prefix_size = get_op_size_prefix(exp->getRetType());
+
+    if (exp->getExpType() != "op") {
+        const char* bin_op = exp->isConst() ? "load_c " : "load_v" ;
+        output_file << "[[BITS" << prefix_size << "]] " << bin_op; exp->accept(*this);
+    }
+    else {
+        exp->accept(*this);
+    }
+
+    output_file << "[[BITS" << prefix_size << "]] " << conv_ops_map.at(node->getRetType()) << "\n";
 }
 void Visitor::visit(MathNode* node) {
     if (node->getLeft()->getExpType() != "op" && node->getRight()->getExpType() != "op") {
@@ -140,7 +162,7 @@ void Visitor::visit(MathNode* node) {
         else {
             const char* l_str = node->getRight()->isConst() ? "load_c " : "load_v ";
 
-            output_file << "[[BITS" << get_op_size_prefix(node->getRight()->getRetType()) << "]]" << l_str; node->getLeft()->accept(*this);
+            output_file << "[[BITS" << get_op_size_prefix(node->getRight()->getRetType()) << "]] " << l_str; node->getLeft()->accept(*this);
             node->getRight()->accept(*this);
         }
     }
@@ -164,7 +186,10 @@ void Visitor::visit(FunctionCall* node) {
     const auto& args = node->getParameters();
     for (size_t i = 0; i < args.size(); ++i) {
         if (args[i]->isConst()) {
-            output_file << "[[BITS" << get_op_size_prefix(args[i]->getRetType()) << "]] " << "load_c "; args[i]->accept(*this);
+            output_file << "[[BITS" << get_op_size_prefix(args[i]->getRetType()) << "]] load_c "; args[i]->accept(*this);
+        }
+        else if (args[i]->getExpType() == "var") {
+            output_file << "[[BITS" << get_op_size_prefix(args[i]->getRetType()) << "]] load_v "; args[i]->accept(*this);
         }
         else {
             args[i]->accept(*this);
@@ -177,8 +202,10 @@ void Visitor::visit(NativeFunctionCall* node) {
     const auto& args = node->getParameters();
     for (size_t i = 0; i < args.size(); ++i) {
         if (args[i]->isConst()) {
-            output_file << "[[BITS" << get_op_size_prefix(args[i]->getRetType()) << "]] " << "load_c ";
-            args[i]->accept(*this);
+            output_file << "[[BITS" << get_op_size_prefix(args[i]->getRetType()) << "]] load_c "; args[i]->accept(*this);
+        }
+        else if (args[i]->getExpType() == "var") {
+            output_file << "[[BITS" << get_op_size_prefix(args[i]->getRetType()) << "]] load_v "; args[i]->accept(*this);
         }
         else {
             args[i]->accept(*this);

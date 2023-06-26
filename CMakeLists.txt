@@ -19,22 +19,71 @@ add_library(NodesLib STATIC ${NodesLibSources})
 aux_source_directory("src/bytecode_gen" BytecodeGeneratorSources)
 add_library(BytecodeGenerator STATIC ${BytecodeGeneratorSources})
 
+add_library(vlibc STATIC
+    "src/vlibc/stdio.cpp"
+    "src/vlibc/stdlib.cpp"
+    "src/vlibc/vlibc.cpp"
+)
+
 add_executable(relc
     "src/symbols.cpp"
     "src/preprocessor.cpp"
     "src/main.cpp"
 )
 
-add_dependencies(RelcGrammar AntlrRelcGrammar)
-target_include_directories(RelcGrammar
-    PUBLIC "/usr/local/include/antlr4-runtime"
-)
-target_include_directories(relc
-    PRIVATE "src"
+add_executable(relcvm
+    "src/relcvm/engine/context.cpp"
+    "src/relcvm/engine/engine.cpp"
+    "src/relcvm/instructions/arithmetic.cpp"
+    "src/relcvm/instructions/binary.cpp"
+    "src/relcvm/instructions/conditional.cpp"
+    "src/relcvm/instructions/control_flow.cpp"
+    "src/relcvm/instructions/conversions.cpp"
+    "src/relcvm/instructions/memory.cpp"
+    "src/relcvm/main.cpp"
 )
 
+add_dependencies(RelcGrammar AntlrRelcGrammar)
+target_include_directories(RelcGrammar PUBLIC
+    "/usr/local/include/antlr4-runtime"
+)
+target_include_directories(relc PRIVATE
+    "src"
+)
+target_include_directories(relcvm PRIVATE
+    "src"
+    "src/relcvm"
+)
+target_include_directories(vlibc PRIVATE
+    "src"
+    "src/relcvm"
+)
+
+set(VLIBC_HEADERS
+    "resources/stdlib.h"
+    "resources/stdio.h"
+)
+
+target_compile_features(RelcGrammar PUBLIC cxx_std_23)
 target_compile_features(NodesLib PUBLIC cxx_std_23)
 target_compile_features(BytecodeGenerator PUBLIC cxx_std_23)
+target_compile_features(vlibc PUBLIC cxx_std_23)
 target_compile_features(relc PUBLIC cxx_std_23)
+target_compile_features(relcvm PUBLIC cxx_std_23)
+
 target_link_libraries(RelcGrammar PUBLIC antlr4-runtime)
 target_link_libraries(relc RelcGrammar NodesLib BytecodeGenerator fmt::fmt)
+target_link_libraries(relcvm BytecodeGenerator vlibc fmt::fmt)
+
+include(GNUInstallDirs)
+
+set(VLIBC_HEADERS_INSTALL_DIR ${CMAKE_INSTALL_FULL_DATADIR}/relc/vlibc_headers)
+configure_file(src/cmake_env.hpp.in ${CMAKE_BINARY_DIR}/custom_gen/include/cmake_env.hpp)
+include_directories(${CMAKE_BINARY_DIR}/custom_gen/include)
+
+install(TARGETS
+    relc relcvm RelcGrammar NodesLib BytecodeGenerator vlibc
+)
+install(FILES ${VLIBC_HEADERS}
+    DESTINATION ${VLIBC_HEADERS_INSTALL_DIR}
+)

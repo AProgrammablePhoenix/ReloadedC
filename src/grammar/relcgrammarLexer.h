@@ -1,5 +1,5 @@
 
-// Generated from src/antlr_grammar/relcgrammar.g4 by ANTLR 4.10.1
+// Generated from src/antlr_grammar/relcgrammar.g4 by ANTLR 4.13.0
 
 #pragma once
 
@@ -12,10 +12,10 @@
 class  relcgrammarLexer : public antlr4::Lexer {
 public:
   enum {
-    INT_LITERAL = 1, FLOAT_LITERAL = 2, TYPE = 3, NativeProtoDecl = 4, ID = 5, 
-    CHAR = 6, PLUS = 7, MINUS = 8, MULT = 9, DIV = 10, EQUAL = 11, SEMI = 12, 
-    COMMA = 13, LPAREN = 14, RPAREN = 15, LCURL = 16, RCURL = 17, NATIVE_SCOPE = 18, 
-    WS = 19
+    LONG_LITERAL = 1, INT_LITERAL = 2, FLOAT_LITERAL = 3, TYPE = 4, CONST = 5, 
+    NativeProtoDecl = 6, ID = 7, CHAR = 8, PLUS = 9, MINUS = 10, MULT = 11, 
+    DIV = 12, EQUAL = 13, SEMI = 14, COMMA = 15, LPAREN = 16, RPAREN = 17, 
+    LCURL = 18, RCURL = 19, NATIVE_SCOPE = 20, WS = 21
   };
 
   explicit relcgrammarLexer(antlr4::CharStream *input);

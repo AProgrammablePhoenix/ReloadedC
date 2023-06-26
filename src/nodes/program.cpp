@@ -1,12 +1,11 @@
 #include <string>
 
-#include "program_node.hpp"
+#include "program.hpp"
 #include "visitor.hpp"
 
 #include "../symbols.hpp"
 
 ProgramNode::ProgramNode(int line, const std::string& translation_unit_name) : Node(line), tu_name(translation_unit_name) {}
-
 void ProgramNode::addFunction(std::string _fname, funcsym _fsymbol) {
     this->functions_table.insert(std::make_pair(_fname, _fsymbol));
 }

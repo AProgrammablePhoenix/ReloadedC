@@ -36,14 +36,18 @@ std::pair<std::string, std::string> gvisitor::visitFunc_declaration(relcgrammarP
         }
 
         for (size_t i = 0; i < proto_plist.size(); ++i) {
-            // only check for types, not parameters names
-            if (proto_plist[i].second != function_parameters[i].second) {
+            // only check for types and constness, not parameters names
+            if (proto_plist[i]._type != function_parameters[i]._type && proto_plist[i]._isconst == function_parameters[i]._isconst) {
                 report_err(
                     fmt::format("Function declaration is not consistent with the function prototype (types for argument {} differ)", i + 1),
                     ctx->TYPE()->getSymbol()->getLine()
                 );
             }
         }
+    }
+
+    if (ftype == "long long") {
+        ftype = "long";
     }
 
     return std::make_pair(fname, ftype);
@@ -79,8 +83,17 @@ std::vector<std::shared_ptr<ExpNode>> gvisitor::visitArguments_list(relcgrammarP
 void gvisitor::visitParameter(relcgrammarParser::ParameterContext *ctx) {
     std::string p_type = ctx->TYPE()->getText();
     std::string p_name = ctx->ID()->getText();
+    bool p_constness = ctx->CONST() != NULL;
 
-    function_parameters.emplace_back(p_name, p_type);
+    if (p_type == "long long") {
+        p_type = "long";
+    }
+
+    function_parameters.push_back({
+        ._name = p_name,
+        ._type = p_type,
+        ._isconst = p_constness
+    });
 }
 void gvisitor::visitParameters_list(relcgrammarParser::Parameters_listContext *ctx) {
     for (auto* param : ctx->parameter()) {

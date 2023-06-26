@@ -1,10 +1,12 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "statement_node.hpp"
+#include "node.hpp"
+#include "expressions.hpp"
 #include "../symbols.hpp"
 
 class ProgramNode: public Node {

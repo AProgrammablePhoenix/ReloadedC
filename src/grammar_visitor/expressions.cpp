@@ -44,11 +44,17 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
                 }
 
                 for (size_t i = 0; i < arg_list.size(); ++i) {
-                    if (arg_list[i]->getRetType() != temp_program->getFunctions().at(sym_name).getParamsList()[i].second) {
+                    std::string _arg_t = arg_list[i]->getRetType();
+                    std::string _param_t = temp_program->getFunctions().at(sym_name).getParamsList()[i]._type;
+
+                    if (!is_implicit_convertible(_arg_t, _param_t)) {
                         report_err(
                             "wrong type of argument was provided (arg " + std::to_string(i + 1) + ") when calling function: " + sym_name,
                             sym_line
                         );
+                    }
+                    else if (_arg_t != _param_t) {
+                        arg_list[i] = std::make_shared<ConversionNode>(arg_list[i]->getline(), arg_list[i], _param_t);
                     }
                 }
 
@@ -67,6 +73,10 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
             return std::make_shared<IdentifierNode>(sym_line, sym_name, s_type);
         }
     }
+    else if (ctx->LONG_LITERAL()) {
+        int64_t n = std::stoull(ctx->LONG_LITERAL()->getText());
+        return std::make_shared<LongNode>(ctx->LONG_LITERAL()->getSymbol()->getLine(), n);
+    }
     else if (ctx->INT_LITERAL()) {
         int64_t n = std::stoull(ctx->INT_LITERAL()->getText());
         return std::make_shared<IntegerNode>(ctx->INT_LITERAL()->getSymbol()->getLine(), n);
@@ -77,6 +87,26 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
     }
     else if (ctx->CHAR()) {
         char c = ctx->CHAR()->getText()[1];
+
+        if (c == '\\') {
+            switch (ctx->CHAR()->getText()[2]) {
+                case '\'': c = '\''; break;
+                case '\"': c = '\"'; break;
+                case '\?': c = '\?'; break;
+                case '\\': c = '\\'; break;
+                case 'a' : c = '\a'; break;
+                case 'b' : c = '\b'; break;
+                case 'f' : c = '\f'; break;
+                case 'n' : c = '\n'; break;
+                case 'r' : c = '\r'; break;
+                case 't' : c = '\t'; break;
+                case 'v' : c = '\v'; break;
+                default: {
+                    report_err("invalid escape sequence: " + ctx->CHAR()->getText(), ctx->CHAR()->getSymbol()->getLine());
+                }
+            }
+        }
+
         return std::make_shared<CharNode>(ctx->CHAR()->getSymbol()->getLine(), c);
     }
     else if (ctx->exp().size() == 2) {
@@ -88,62 +118,68 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
 
         size_t line = left_exp_ctx->getStart()->getLine();
 
-        if (ctx->PLUS()) {
-            if (left_exp->getRetType() != right_exp->getRetType()) {
-                report_err(
-                    fmt::format(
-                        "can't add an expression of type '{}' to another of type '{}'",
-                        left_exp->getRetType(),
-                        right_exp->getRetType()
-                    ),
-                    ctx->PLUS()->getSymbol()->getLine()
-                );
+        const auto& t1 = left_exp->getRetType();
+        const auto& t2 = right_exp->getRetType();
+
+        _implicit_conversion_t _conv_info;
+
+        if (!is_implicit_convertible(t1, t2)) {
+            std::string _operation = "(undefined operation)";
+            size_t _line = (size_t)-1;
+
+            if (ctx->PLUS()) {
+                _operation = "add";
+                _line = ctx->PLUS()->getSymbol()->getLine();
             }
+            else if (ctx->MINUS()) {
+                _operation = "subtract";
+                _line = ctx->MINUS()->getSymbol()->getLine();
+            }
+            else if (ctx->MULT()) {
+                _operation = "multiply";
+                _line = ctx->MULT()->getSymbol()->getLine();
+            }
+            else if (ctx->DIV()) {
+                _operation = "divide";
+                _line = ctx->DIV()->getSymbol()->getLine();
+            }
+
+            report_err(
+                fmt::format(
+                    "can't {} an expression of type '{}' to another of type '{}'",
+                    _operation,
+                    left_exp->getRetType(),
+                    right_exp->getRetType()
+                ),
+                _line
+            );
+        }
+        else if (t1 != t2) {
+            _conv_info = this->get_expression_implicit_conversion(t1, t2);
+            if (_conv_info._left_to_right) {
+                left_exp = std::make_shared<ConversionNode>(line, std::move(left_exp), right_exp->getRetType());
+            }
+            else {
+                right_exp = std::make_shared<ConversionNode>(line, std::move(right_exp), left_exp->getRetType());
+            }
+        }
+
+        if (ctx->PLUS()) {
             return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '+', left_exp->getRetType());
         }
         else if (ctx->MINUS()) {
-            if (left_exp->getRetType() != right_exp->getRetType()) {
-                report_err(
-                    fmt::format(
-                        "can't subtract an expression of type '{}' to another of type '{}'",
-                        left_exp->getRetType(),
-                        right_exp->getRetType()
-                    ),
-                    ctx->PLUS()->getSymbol()->getLine()
-                );
-            }
             return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '-', left_exp->getRetType());
         }
         else if (ctx->MULT()) {
-            if (left_exp->getRetType() != right_exp->getRetType()) {
-                report_err(
-                    fmt::format(
-                        "can't multiply an expression of type '{}' to another of type '{}'",
-                        left_exp->getRetType(),
-                        right_exp->getRetType()
-                    ),
-                    ctx->PLUS()->getSymbol()->getLine()
-                );
-            }
             return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '*', left_exp->getRetType());
         }
         else if (ctx->DIV()) {
-            if (left_exp->getRetType() != right_exp->getRetType()) {
-                report_err(
-                    fmt::format(
-                        "can't divide an expression of type '{}' to another of type '{}'",
-                        left_exp->getRetType(),
-                        right_exp->getRetType()
-                    ),
-                    ctx->PLUS()->getSymbol()->getLine()
-                );
-            }
             return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '/', left_exp->getRetType());
         }
     }
     else if (ctx->exp().size() == 1 && ctx->LPAREN() && ctx->RPAREN()) {
         auto* exp_ctx = ctx->exp(0);
-        auto exp = visitExp(exp_ctx);
+        auto  exp = visitExp(exp_ctx);
         
         return std::move(exp);
     }

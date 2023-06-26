@@ -62,7 +62,7 @@ void gvisitor::visitGlobal_statement(relcgrammarParser::Global_statementContext 
         funcsym& fsym = func.second;
 
         for (const auto& _vdef : function_local_vars) {
-            fsym.addVarSym(_vdef.first, _vdef.second);
+            fsym.addVarSym(_vdef._name, _vdef._type);
         }
         temp_program->addFunction(func.first, fsym);
 
