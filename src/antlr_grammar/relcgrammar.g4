@@ -4,7 +4,7 @@ LONG_LITERAL: ('-')?[0-9]+('U')?'L'('L')?;
 INT_LITERAL: ('-')?[0-9]+('U')?;
 FLOAT_LITERAL: [0-9]+.[0-9]+;
 
-TYPE: ('void'|'char'|'int'|'long long'|'long');
+INTERNAL_TYPE: ('void'|'char'|'int'|'long long'|'long');
 CONST: 'const';
 
 NativeProtoDecl: '__nativedecl';
@@ -32,6 +32,18 @@ NATIVE_SCOPE: '::';
 
 WS: [ \t\r\n]+ -> skip;
 
+plain_type:
+	INTERNAL_TYPE
+	| CONST INTERNAL_TYPE
+	| INTERNAL_TYPE CONST
+	;
+pointer_type:
+	plain_type ('*')+ CONST;
+type:
+	pointer_type
+	| plain_type
+	;
+
 program: global_statement+;
 global_statement:
 	native_func_prototype
@@ -50,8 +62,7 @@ assignment:
 	ID EQUAL exp
 	;
 initialization:
-	CONST TYPE ID EQUAL exp
-	| TYPE ID EQUAL exp
+	type ID EQUAL exp
 	;
 exp:
 	LPAREN exp RPAREN
@@ -70,16 +81,13 @@ exp:
 	;
 native_call: NATIVE_SCOPE ID LPAREN (arguments_list)? RPAREN;
 arguments_list:	exp (COMMA exp)*;
-parameter:
-	TYPE ID
-	| CONST TYPE ID
-	;
+parameter: type ID;
 parameters_list: parameter (COMMA parameter)*;
 native_func_prototype: NativeProtoDecl LPAREN ID RPAREN func_prototype;
 func_prototype: func_declaration SEMI;
 func_declaration:
-	TYPE ID LPAREN parameters_list RPAREN
-	| TYPE ID LPAREN RPAREN
+	type ID LPAREN parameters_list RPAREN
+	| type ID LPAREN RPAREN
 	;
 scope: statement+;
 bordered_scope:	LCURL scope RCURL;
