@@ -1,8 +1,9 @@
 #pragma once
 
 #include "expressions.hpp"
+#include "../internal_types.hpp"
 
-template<typename T, const char* _imm_type, const char* _type> class _internal_primitive: public ExpNode {
+template<typename T, const char* _imm_type, const _typeinfo_t& _type> class _internal_primitive: public ExpNode {
 public:
     _internal_primitive(int line, T value) : ExpNode(line, _imm_type, _type), value(value) {};
     const T& getValue() const { return this->value; };
@@ -16,13 +17,18 @@ inline constexpr char _internal_imm_num[] = "imm_num";
 inline constexpr char _internal_imm_flt[] = "imm_flt";
 inline constexpr char _internal_imm_chr[] = "imm_chr";
 
-inline constexpr char _internal_int[] = "int";
-inline constexpr char _internal_long[] = "long";
-inline constexpr char _internal_float[] = "float";
-inline constexpr char _internal_char[] = "char";
-
-
-template class _internal_primitive<int32_t, _internal_imm_num, _internal_int>;
+inline constexpr _typeinfo_t _internal_int = {
+    ._type = "int"
+};
+inline constexpr _typeinfo_t _internal_long = {
+    ._type = "long"
+};
+inline constexpr _typeinfo_t _internal_float = {
+    ._type = "float"
+};
+inline constexpr _typeinfo_t _internal_char = {
+    ._type = "char"
+};
 
 class IntegerNode : public _internal_primitive<int32_t, _internal_imm_num, _internal_int> {
 public:

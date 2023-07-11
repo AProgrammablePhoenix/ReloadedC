@@ -3,17 +3,18 @@
 #include "node.hpp"
 #include "expressions.hpp"
 #include "visitor.hpp"
+#include "../internal_types.hpp"
 
-ExpNode::ExpNode(int line, const std::string& exp_type, const std::string& ret_type) :
+ExpNode::ExpNode(int line, const std::string& exp_type, const _typeinfo_t& ret_type) :
     Node(line), exp_type(exp_type), ret_type(ret_type) {}
 const std::string& ExpNode::getExpType() {
     return this->exp_type;
 }
-const std::string& ExpNode::getRetType() {
+const _typeinfo_t& ExpNode::getRetType() {
     return this->ret_type;
 }
 
-ConversionNode::ConversionNode(int line, std::shared_ptr<ExpNode> exp_in, const std::string& ret_type) : ExpNode(line, "op", ret_type) {
+ConversionNode::ConversionNode(int line, std::shared_ptr<ExpNode> exp_in, const _typeinfo_t& ret_type) : ExpNode(line, "op", ret_type) {
     this->exp_in = std::move(exp_in);
 }
 ExpNode* ConversionNode::getExp() {
@@ -30,7 +31,7 @@ void ConversionNode::delete_mem() {
     this->exp_in->delete_mem();
 }
 
-MathNode::MathNode(int line, std::shared_ptr<ExpNode> left, std::shared_ptr<ExpNode>right, char op, const std::string& ret_type) :
+MathNode::MathNode(int line, std::shared_ptr<ExpNode> left, std::shared_ptr<ExpNode>right, char op, const _typeinfo_t& ret_type) :
         ExpNode(line, "op", ret_type), op(op) {
     this->left = std::move(left);
     this->right = std::move(right);
@@ -56,7 +57,7 @@ void MathNode::delete_mem() {
     this->right->delete_mem();
 }
 
-IdentifierNode::IdentifierNode(int line, const std::string& name, const std::string& ret_type) :
+IdentifierNode::IdentifierNode(int line, const std::string& name, const _typeinfo_t& ret_type) :
     ExpNode(line, "var", ret_type), name(name) {}
 
 const std::string& IdentifierNode::getName() {
@@ -70,7 +71,7 @@ void IdentifierNode::accept(Visitor& v) {
 }
 
 // User defined functions
-FunctionCall::FunctionCall(int line, const std::string& func_name, std::vector<std::shared_ptr<ExpNode>>& parameters, const std::string& ret_type) :
+FunctionCall::FunctionCall(int line, const std::string& func_name, std::vector<std::shared_ptr<ExpNode>>& parameters, const _typeinfo_t& ret_type) :
         ExpNode(line, "op", ret_type), func_name(func_name) {
     this->parameters = std::move(parameters);
 }
@@ -99,7 +100,7 @@ NativeFunctionCall::NativeFunctionCall(int line,
         const std::string& nfunc_name,
         const std::string& lib,
         std::vector<std::shared_ptr<ExpNode>>& parameters,
-        const std::string& ret_type) : ExpNode(line, "op", ret_type), nfunc_name(nfunc_name), lib(lib) {
+        const struct _typeinfo_t& ret_type) : ExpNode(line, "op", ret_type), nfunc_name(nfunc_name), lib(lib) {
     this->parameters = std::move(parameters);
 }
 const std::string& NativeFunctionCall::getName() const {

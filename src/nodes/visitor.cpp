@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "visitor.hpp"
+#include "../internal_types.hpp"
 
 #include <fmt/core.h>
 #include <fmt/color.h>
@@ -13,31 +14,38 @@ namespace {
     static std::unordered_map<std::string, uintmax_t> vars_disp;
     static std::ofstream output_file;
 
-    inline uintmax_t compute_type_size(const std::string& _tinfo) {
-        if (_tinfo == "void")       // 0 byte
+    inline uintmax_t compute_type_size(const _typeinfo_t& _tinfo) {
+        if (_tinfo._isptr) {
+            return sizeof(void*);
+        }
+
+        const std::string& _type = _tinfo._type;
+        if (_type == "void")       // 0 byte
             return 0;
-        else if (_tinfo == "char")  // 1 byte
+        else if (_type == "char")  // 1 byte
             return 1;
-        else if (_tinfo == "int")   // 4 bytes
+        else if (_type == "int")   // 4 bytes
             return 4;
         else                        // long: 8 bytes
             return 8;
     }
 
-    inline const std::string& get_op_size_prefix(const std::string& type) {
+    inline const std::string& get_op_size_prefix(const _typeinfo_t& type) {
         static const std::string sizes[4] = {
             "8","16","32","64"
         };
-
-        if (type == "char") return sizes[0];
-        else if (type == "int") return sizes[2];
-        else if (type == "long") return sizes[3];
+        static const std::string ptr_size = std::to_string(8ULL * sizeof(void*));
+        
+        if (type._isptr) return ptr_size;
+        else if (type._type == "char") return sizes[0];
+        else if (type._type == "int") return sizes[2];
+        else if (type._type == "long") return sizes[3];
 
         throw std::runtime_error(
             fmt::format(
                 "{} (compilation): cannot find size of type '{}'",
                 fmt::styled("error", fg(fmt::color::red)),
-                type
+                type._type
             )
         );
     }
@@ -58,19 +66,19 @@ void Visitor::visit(ProgramNode* node) {
 
         for (size_t i = 0; i < params.size(); ++i) {
             auto& p = params[i];
-            output_file << "//\t Parameter (" << p._type << "): " << p._name << " => located at [" << last_disp << "]\n";
+            output_file << "//\t Parameter (" << p._tinfo._type << "): " << p._name << " => located at [" << last_disp << "]\n";
             vars_disp.emplace(p._name, last_disp);
-            last_disp += compute_type_size(p._type);
+            last_disp += compute_type_size(p._tinfo);
         }
         for (const auto& _vdef : f.second.getVarTable()) {
-            output_file << "//\t Local var (" << _vdef.second << "): " << _vdef.first << " => located at [" << last_disp << "]\n";
+            output_file << "//\t Local var (" << _vdef.second._type << "): " << _vdef.first << " => located at [" << last_disp << "]\n";
             vars_disp.emplace(_vdef.first, last_disp);
             last_disp += compute_type_size(_vdef.second);
         }
         output_file << "// Load parameters\n";
         params_def_list::reverse_iterator rit = params.rbegin();
         for (; rit != params.rend(); ++rit) {
-            output_file << "[[BITS" << get_op_size_prefix(rit->_type) << "]] " <<  "store " << vars_disp.at(rit->_name) << "\n";
+            output_file << "[[BITS" << get_op_size_prefix(rit->_tinfo) << "]] " <<  "store " << vars_disp.at(rit->_name) << "\n";
         }
         for (auto& statement : f.second.getStatements()) {
             statement.accept(*this);
@@ -124,9 +132,16 @@ void Visitor::visit(CharNode* node) {
 void Visitor::visit(ConversionNode* node) {
     static const std::unordered_map<std::string, std::string> conv_ops_map = {
         { "char", "secb" },
-        { "int", "secd"},
+        { "int",  "secd" },
         { "long", "secq" }
     };
+    static const std::unordered_map<size_t, std::string> size_conv_ops_map = {
+        {  8, "secb" },
+        { 16, "secw" },
+        { 32, "secd" },
+        { 64, "secq" }
+    };
+
     ExpNode* exp = node->getExp();
     const auto& prefix_size = get_op_size_prefix(exp->getRetType());
 
@@ -138,7 +153,17 @@ void Visitor::visit(ConversionNode* node) {
         exp->accept(*this);
     }
 
-    output_file << "[[BITS" << prefix_size << "]] " << conv_ops_map.at(node->getRetType()) << "\n";
+    const _typeinfo_t& ret_type = node->getRetType();
+    std::string conv_op = "";
+
+    if (ret_type._isptr) {
+        conv_op = size_conv_ops_map.at(8 * sizeof(void*));
+    }
+    else {
+        conv_op = conv_ops_map.at(ret_type._type);
+    }
+
+    output_file << "[[BITS" << prefix_size << "]] " << conv_op << "\n";
 }
 void Visitor::visit(MathNode* node) {
     if (node->getLeft()->getExpType() != "op" && node->getRight()->getExpType() != "op") {

@@ -5,20 +5,22 @@
 #include <vector>
 
 #include "node.hpp"
+#include "../internal_types.hpp"
 
 class ExpNode: public Node {
 public:
-    ExpNode(int line, const std::string& exp_type, const std::string& ret_type);
+    ExpNode(int line, const std::string& exp_type, const _typeinfo_t& ret_type);
     const std::string& getExpType();
-    const std::string& getRetType();
+    const _typeinfo_t& getRetType();
     virtual constexpr bool isConst() const = 0;
 private:
-    std::string exp_type, ret_type;
+    std::string exp_type;
+    _typeinfo_t ret_type;
 };
 
 class ConversionNode: public ExpNode {
 public:
-    ConversionNode(int line, std::shared_ptr<ExpNode> exp_in, const std::string& ret_type);
+    ConversionNode(int line, std::shared_ptr<ExpNode> exp_in, const _typeinfo_t& ret_type);
     ExpNode* getExp();
     constexpr bool isConst() const;
     void accept(class Visitor& v);
@@ -30,7 +32,7 @@ private:
 
 class MathNode: public ExpNode {
 public:
-    MathNode(int line, std::shared_ptr<ExpNode> left, std::shared_ptr<ExpNode> right, char op, const std::string& ret_type);
+    MathNode(int line, std::shared_ptr<ExpNode> left, std::shared_ptr<ExpNode> right, char op, const _typeinfo_t& ret_type);
     ExpNode* getLeft();
     ExpNode* getRight();
     char getOp();
@@ -45,7 +47,7 @@ private:
 
 class IdentifierNode: public ExpNode {
 public:
-    IdentifierNode(int line, const std::string& name, const std::string& ret_type);
+    IdentifierNode(int line, const std::string& name, const _typeinfo_t& ret_type);
     void accept(class Visitor& v);
     const std::string& getName();
     constexpr bool isConst() const;
@@ -55,7 +57,7 @@ private:
 
 class FunctionCall : public ExpNode {
 public:
-    FunctionCall(int line, const std::string& func_name, std::vector<std::shared_ptr<ExpNode>>& parameters, const std::string& ret_type);
+    FunctionCall(int line, const std::string& func_name, std::vector<std::shared_ptr<ExpNode>>& parameters, const _typeinfo_t& ret_type);
     const std::string& getName() const;
     const std::vector<std::shared_ptr<ExpNode>>& getParameters() const;
     constexpr bool isConst() const;
@@ -69,7 +71,7 @@ private:
 
 class NativeFunctionCall : public ExpNode {
 public:
-    NativeFunctionCall(int line, const std::string& nfunc_name, const std::string& lib, std::vector<std::shared_ptr<ExpNode>>& parameters, const std::string& ret_type);
+    NativeFunctionCall(int line, const std::string& nfunc_name, const std::string& lib, std::vector<std::shared_ptr<ExpNode>>& parameters, const _typeinfo_t& ret_type);
     const std::string& getName() const;
     const std::string& getLib() const;
     const std::vector<std::shared_ptr<ExpNode>>& getParameters() const;
