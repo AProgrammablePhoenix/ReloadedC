@@ -20,8 +20,8 @@ std::pair<std::string, funcsym> gvisitor::visitFunc_body(relcgrammarParser::Func
 
     return std::make_pair(func_decl.first, fsym);
 }
-std::pair<std::string, std::string> gvisitor::visitFunc_declaration(relcgrammarParser::Func_declarationContext *ctx) {
-    std::string ftype = ctx->TYPE()->getText();
+std::pair<std::string, _typeinfo_t> gvisitor::visitFunc_declaration(relcgrammarParser::Func_declarationContext *ctx) {
+    _typeinfo_t ftype = visitType(ctx->type());
     std::string fname = ctx->ID()->getText();
 
     auto* plist = ctx->parameters_list();
@@ -32,22 +32,18 @@ std::pair<std::string, std::string> gvisitor::visitFunc_declaration(relcgrammarP
     if (prototypes.count(fname)) {
         const auto& proto_plist = prototypes.at(fname).getParamsList();
         if (proto_plist.size() != function_parameters.size()) {
-            report_err("Function declaration is not consistent with the function prototype", ctx->TYPE()->getSymbol()->getLine());
+            report_err("Function declaration is not consistent with the function prototype", ctx->type()->getStart()->getLine());
         }
 
         for (size_t i = 0; i < proto_plist.size(); ++i) {
             // only check for types and constness, not parameters names
-            if (proto_plist[i]._type != function_parameters[i]._type && proto_plist[i]._isconst == function_parameters[i]._isconst) {
+            if (proto_plist[i]._tinfo._type != function_parameters[i]._tinfo._type && proto_plist[i]._tinfo._isconst == function_parameters[i]._tinfo._isconst) {
                 report_err(
                     fmt::format("Function declaration is not consistent with the function prototype (types for argument {} differ)", i + 1),
-                    ctx->TYPE()->getSymbol()->getLine()
+                    ctx->type()->getStart()->getLine()
                 );
             }
         }
-    }
-
-    if (ftype == "long long") {
-        ftype = "long";
     }
 
     return std::make_pair(fname, ftype);
@@ -61,7 +57,7 @@ std::shared_ptr<ExpNode> gvisitor::visitNative_call(relcgrammarParser::Native_ca
     }
 
     auto& [nflib, nproto] = native_prototypes.at(nfsym_name);
-    const std::string& ret_type = nproto.getRetType();
+    const _typeinfo_t& ret_type = nproto.getRetType();
 
     std::vector<std::shared_ptr<ExpNode>> args_list;
 
@@ -81,18 +77,12 @@ std::vector<std::shared_ptr<ExpNode>> gvisitor::visitArguments_list(relcgrammarP
     return ret;
 }
 void gvisitor::visitParameter(relcgrammarParser::ParameterContext *ctx) {
-    std::string p_type = ctx->TYPE()->getText();
+    _typeinfo_t p_type = visitType(ctx->type());
     std::string p_name = ctx->ID()->getText();
-    bool p_constness = ctx->CONST() != NULL;
-
-    if (p_type == "long long") {
-        p_type = "long";
-    }
 
     function_parameters.push_back({
         ._name = p_name,
-        ._type = p_type,
-        ._isconst = p_constness
+        ._tinfo = p_type
     });
 }
 void gvisitor::visitParameters_list(relcgrammarParser::Parameters_listContext *ctx) {

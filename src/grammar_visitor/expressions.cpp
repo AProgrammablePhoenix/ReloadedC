@@ -44,8 +44,8 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
                 }
 
                 for (size_t i = 0; i < arg_list.size(); ++i) {
-                    std::string _arg_t = arg_list[i]->getRetType();
-                    std::string _param_t = temp_program->getFunctions().at(sym_name).getParamsList()[i]._type;
+                    const _typeinfo_t& _arg_t = arg_list[i]->getRetType();
+                    const _typeinfo_t& _param_t = temp_program->getFunctions().at(sym_name).getParamsList()[i]._tinfo;
 
                     if (!is_implicit_convertible(_arg_t, _param_t)) {
                         report_err(
@@ -53,7 +53,7 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
                             sym_line
                         );
                     }
-                    else if (_arg_t != _param_t) {
+                    else if (_arg_t._type != _param_t._type) {
                         arg_list[i] = std::make_shared<ConversionNode>(arg_list[i]->getline(), arg_list[i], _param_t);
                     }
                 }
@@ -68,7 +68,7 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
         }
         else {
             if (!is_var_defined(sym_name)) report_err("undefined identifier: " + sym_name, sym_line);
-            std::string s_type = fetch_var_type(sym_name, sym_line);
+            const _typeinfo_t& s_type = fetch_var_type(sym_name, sym_line);
 
             return std::make_shared<IdentifierNode>(sym_line, sym_name, s_type);
         }
@@ -109,6 +109,26 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
 
         return std::make_shared<CharNode>(ctx->CHAR()->getSymbol()->getLine(), c);
     }
+    else if (ctx->ptrderef) {
+        auto* exp_ctx = ctx->exp(0);
+        auto  exp = visitExp(exp_ctx);
+
+        if (!exp->getRetType()._isptr) {
+            report_err("cannot dereference a non pointer expression: " + exp_ctx->getText(), exp_ctx->getStart()->getLine());
+        }
+        
+        // implement dereference node (that deduces the type of the dereferenced value upon construction)
+    }
+    else if (ctx->ptrgetref) {
+        auto* id_ctx = ctx->ID();
+        const std::string& id = id_ctx->getText();
+
+        if (!is_var_defined(id)) {
+            report_err("lvalue required as unary '&' operand: &" + id, id_ctx->getSymbol()->getLine());
+        }
+
+        // implement addressof node (that deduces the type of the newly created pointer)
+    }
     else if (ctx->exp().size() == 2) {
         auto* left_exp_ctx  = ctx->exp(0);
         auto* right_exp_ctx = ctx->exp(1);
@@ -118,12 +138,12 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
 
         size_t line = left_exp_ctx->getStart()->getLine();
 
-        const auto& t1 = left_exp->getRetType();
-        const auto& t2 = right_exp->getRetType();
+        const _typeinfo_t& t1 = left_exp->getRetType();
+        const _typeinfo_t& t2 = right_exp->getRetType();
 
         _implicit_conversion_t _conv_info;
 
-        if (!is_implicit_convertible(t1, t2)) {
+        if (!is_implicit_convertible(t1, t2, false) || !is_valid_arithmetic(t1, t2)) {
             std::string _operation = "(undefined operation)";
             size_t _line = (size_t)-1;
 
@@ -148,14 +168,14 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
                 fmt::format(
                     "can't {} an expression of type '{}' to another of type '{}'",
                     _operation,
-                    left_exp->getRetType(),
-                    right_exp->getRetType()
+                    left_exp->getRetType()._type,
+                    right_exp->getRetType()._type
                 ),
                 _line
             );
         }
-        else if (t1 != t2) {
-            _conv_info = this->get_expression_implicit_conversion(t1, t2);
+        else if (t1._type != t2._type) {
+            _conv_info = get_expression_implicit_conversion(t1, t2);
             if (_conv_info._left_to_right) {
                 left_exp = std::make_shared<ConversionNode>(line, std::move(left_exp), right_exp->getRetType());
             }

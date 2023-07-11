@@ -36,48 +36,41 @@ std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitAssignment(relcg
     size_t vname_line = ctx->ID()->getSymbol()->getLine();
     const auto& vdata = fetch_var_data(vname, vname_line);
     
-    if (!is_implicit_convertible(vdata._type, exp->getRetType())) {
-        report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType(), vdata._type), vname_line);
+    if (!is_implicit_convertible(vdata._tinfo, exp->getRetType())) {
+        report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType()._type, vdata._tinfo._type), vname_line);
     }
-    else if (vdata._type != exp->getRetType()) {
-        exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), vdata._type);
+    else if (vdata._tinfo._type != exp->getRetType()._type) {
+        exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), vdata._tinfo);
     }
-    else if (vdata._isconst) {
+    else if (vdata._tinfo._isconst) {
         report_err(fmt::format("assignment of read-only variable '{}'", vname), vname_line);
     }
 
     return std::make_pair(vname, exp);
 }
 std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitInitialization(relcgrammarParser::InitializationContext *ctx) {
-    std::string vtype = ctx->TYPE()->getText();
     std::string vname = ctx->ID()->getText();
-    bool vconstness = ctx->CONST() != NULL;
+    _typeinfo_t vtype = visitType(ctx->type());
 
     std::shared_ptr<ExpNode> exp = visitExp(ctx->exp());
-
-    if (vtype == "long long") {
-        vtype = "long";
-    }
-
     size_t vname_line = ctx->ID()->getSymbol()->getLine();
 
-    if (vtype == "void") {
+    if (vtype._type == "void") {
         report_err(fmt::format("illegal creation of a 'void' variable '{}'", vname), vname_line);
     }
     else if (!is_implicit_convertible(vtype, exp->getRetType())) {
-        report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType(), vtype), vname_line);
+        report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType()._type, vtype._type), vname_line);
     }
     else if (is_var_defined(vname)) {
         report_err("redifition of variable: " + vname, vname_line);
     }
-    else if (vtype != exp->getRetType()) {
+    else if (vtype._type != exp->getRetType()._type) {
         exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), vtype);
     }
     
     function_local_vars.push_back({
         ._name = vname,
-        ._type = vtype,
-        ._isconst = vconstness
+        ._tinfo = vtype
     });
     return std::make_pair(vname, exp);
 }
