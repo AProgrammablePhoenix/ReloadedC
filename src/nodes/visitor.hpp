@@ -10,6 +10,8 @@ public:
     virtual void visit(ProgramNode* node);
     virtual void visit(StatementNode* Node);
     virtual void visit(IdentifierNode* node);
+    virtual void visit(DereferenceNode* node);
+    virtual void visit(AddressofNode* node);
     virtual void visit(IntegerNode* node);
     virtual void visit(LongNode* node);
     virtual void visit(FloatNode* node);

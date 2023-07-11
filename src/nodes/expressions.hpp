@@ -55,6 +55,30 @@ private:
     std::string name;
 };
 
+class DereferenceNode: public ExpNode {
+public:
+    DereferenceNode(int line, std::shared_ptr<ExpNode> exp, const _typeinfo_t& ret_type);
+    ExpNode* getExp();
+    constexpr bool isConst() const;
+    void accept(class Visitor& v);
+
+    void delete_mem();
+private:
+    std::shared_ptr<ExpNode> exp;
+};
+
+class AddressofNode: public ExpNode {
+public:
+    AddressofNode(int line, std::shared_ptr<IdentifierNode> exp, const _typeinfo_t& ret_type);
+    ExpNode* getExp();
+    constexpr bool isConst() const;
+    void accept(class Visitor& v);
+
+    void delete_mem();
+private:
+    std::shared_ptr<ExpNode> exp;
+};
+
 class FunctionCall : public ExpNode {
 public:
     FunctionCall(int line, const std::string& func_name, std::vector<std::shared_ptr<ExpNode>>& parameters, const _typeinfo_t& ret_type);

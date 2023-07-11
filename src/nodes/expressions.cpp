@@ -70,6 +70,40 @@ void IdentifierNode::accept(Visitor& v) {
     v.visit(this);
 }
 
+DereferenceNode::DereferenceNode(int line, std::shared_ptr<ExpNode> exp, const _typeinfo_t& ret_type) :
+        ExpNode(line, "op", ret_type) {
+    this->exp = std::move(exp);
+}
+ExpNode* DereferenceNode::getExp() {
+    return this->exp.get();
+}
+constexpr bool DereferenceNode::isConst() const {
+    return false;
+}
+void DereferenceNode::accept(Visitor& v) {
+    v.visit(this);
+}
+void DereferenceNode::delete_mem() {
+    this->exp->delete_mem();
+}
+
+AddressofNode::AddressofNode(int line, std::shared_ptr<IdentifierNode> exp, const _typeinfo_t& ret_type) :
+        ExpNode(line, "op", ret_type) {
+    this->exp = std::move(exp);
+}
+ExpNode* AddressofNode::getExp() {
+    return this->exp.get();
+}
+constexpr bool AddressofNode::isConst() const {
+    return false;
+}
+void AddressofNode::accept(Visitor& v) {
+    v.visit(this);
+}
+void AddressofNode::delete_mem() {
+    this->exp->delete_mem();
+}
+
 // User defined functions
 FunctionCall::FunctionCall(int line, const std::string& func_name, std::vector<std::shared_ptr<ExpNode>>& parameters, const _typeinfo_t& ret_type) :
         ExpNode(line, "op", ret_type), func_name(func_name) {

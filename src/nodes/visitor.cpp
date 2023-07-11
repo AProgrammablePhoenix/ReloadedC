@@ -117,6 +117,12 @@ void Visitor::visit(IdentifierNode* node) {
         output_file << node->getName() << "\n";
     }
 }
+void Visitor::visit(DereferenceNode* node) {
+    // not yet implemented
+}
+void Visitor::visit(AddressofNode* node) {
+    // not yet implemented
+}
 void Visitor::visit(IntegerNode* node) {
     output_file << node->getValue() << "\n";
 }

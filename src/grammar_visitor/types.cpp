@@ -12,6 +12,39 @@
 #include "gvisitor.hpp"
 #include "../internal_types.hpp"
 
+namespace {
+    static const std::unordered_set<std::string> primitive_types = { "bool", "char", "short", "int", "long", "float", "double", "long double"};
+    static const std::unordered_set<std::string> float_types = { "float", "double", "long double" };
+    
+    static bool is_integer(const _typeinfo_t& t) {
+        return primitive_types.contains(t._type) && !t._isfloat;
+    }
+
+    static bool are_types_equal(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
+        if (t_in._type == t_out._type) {
+            return t_in._isptr == t_out._isptr && t_in._isfloat == t_out._isfloat;
+        }
+        return false;
+    }
+    static bool are_pointers_compatible(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
+        if (!t_in._isptr || !t_out._isptr) {
+            return false;
+        }
+        else if (t_in._isptrtoconst && !t_out._isptrtoconst) {
+            return false;
+        }
+        else if (t_in._ptrlvl != t_out._ptrlvl) {
+            return false;
+        }
+        else if (t_in._type != t_out._type && !t_in._isvoidptr && !t_out._isvoidptr) {
+            return false;
+        }
+
+        return true;
+    }
+
+}
+
 _typeinfo_t gvisitor::visitType(relcgrammarParser::TypeContext* ctx) {
     _typeinfo_t _tinfo;
 
@@ -49,45 +82,14 @@ _typeinfo_t gvisitor::visitType(relcgrammarParser::TypeContext* ctx) {
     if (rawtype == "long long") {
         rawtype = "long";
     }
-    else if (rawtype == "void") {
+    else if (rawtype == "void" && _tinfo._isptr) {
         _tinfo._isvoidptr = true;
     }
 
     _tinfo._type = rawtype + _tinfo._type;
+    _tinfo._isfloat = float_types.contains(rawtype); // if it's a pointer, only stores the base type
 
     return _tinfo;
-}
-
-namespace {
-    static const std::unordered_set<std::string> primitive_types = { "bool", "char", "short", "int", "long", "float", "double", "long double"}; // missing short
-    
-    static bool is_integer(const _typeinfo_t& t) {
-        return primitive_types.contains(t._type) && !t._isfloat;
-    }
-
-    static bool are_types_equal(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
-        if (t_in._type == t_out._type) {
-            return t_in._isptr == t_out._isptr && t_in._isfloat == t_out._isfloat;
-        }
-        return false;
-    }
-    static bool are_pointers_compatible(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
-        if (!t_in._isptr || !t_out._isptr) {
-            return false;
-        }
-        else if (t_in._isptrtoconst && !t_out._isptrtoconst) {
-            return false;
-        }
-        else if (t_in._ptrlvl != t_out._ptrlvl) {
-            return false;
-        }
-        else if (t_in._type != t_out._type && !t_in._isvoidptr && !t_out._isvoidptr) {
-            return false;
-        }
-
-        return true;
-    }
-
 }
 
 // TODO:
