@@ -36,7 +36,7 @@ std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitAssignment(relcg
     size_t vname_line = ctx->ID()->getSymbol()->getLine();
     const auto& vdata = fetch_var_data(vname, vname_line);
     
-    if (!is_implicit_convertible(vdata._tinfo, exp->getRetType())) {
+    if (!is_implicit_convertible(exp->getRetType(), vdata._tinfo)) {
         report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType()._type, vdata._tinfo._type), vname_line);
     }
     else if (vdata._tinfo._type != exp->getRetType()._type) {
@@ -58,7 +58,7 @@ std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitInitialization(r
     if (vtype._type == "void") {
         report_err(fmt::format("illegal creation of a 'void' variable '{}'", vname), vname_line);
     }
-    else if (!is_implicit_convertible(vtype, exp->getRetType())) {
+    else if (!is_implicit_convertible(exp->getRetType(), vtype)) {
         report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType()._type, vtype._type), vname_line);
     }
     else if (is_var_defined(vname)) {

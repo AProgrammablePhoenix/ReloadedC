@@ -21,12 +21,30 @@ namespace {
     }
 
     static bool are_types_equal(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
-        if (t_in._type == t_out._type) {
-            return t_in._isptr == t_out._isptr && t_in._isfloat == t_out._isfloat;
+        if (t_in._type != t_out._type) {
+            return false;
         }
-        return false;
+        else if (t_in._isptr != t_out._isptr) {
+            return false;
+        }
+        else if (t_in._isptrtoconst != t_out._isptrtoconst) {
+            return false;
+        }
+        else if (t_in._ptrlvl != t_out._ptrlvl) {
+            return false;
+        }
+        else if (t_in._isptrtoconst != t_out._isptrtoconst) {
+            return false;
+        }
+        else if (t_in._isfloat != t_out._isfloat) {
+            return false;
+        }
+
+        return true;
     }
     static bool are_pointers_compatible(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
+        std::cout << t_in._isptrtoconst << ":" << t_out._isptrtoconst << "\n";
+
         if (!t_in._isptr || !t_out._isptr) {
             return false;
         }
@@ -100,6 +118,7 @@ bool is_implicit_convertible(const _typeinfo_t& t_in, const _typeinfo_t& t_out, 
         return true;
     }
     else if (t_in._isptr && t_out._isptr) {
+        std::cout << in_out << "\n";
         bool _cmp_in_out = are_pointers_compatible(t_in, t_out);
         if (_cmp_in_out) {
             return true;
