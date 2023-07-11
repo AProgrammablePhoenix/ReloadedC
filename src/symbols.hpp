@@ -1,51 +1,45 @@
 #pragma once
 
 #include "nodes/expressions.hpp"
+#include "internal_types.hpp"
 
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-struct _variable_def_t {
-    std::string _name;
-    std::string _type;
-
-    bool _isconst = false;
-};
-
 typedef std::vector<_variable_def_t> params_def_list;
 
 class funcsym {
 public:
-    funcsym(const std::string& ret_type, params_def_list parameters_list, std::vector<StatementNode> inner_statements);
-    void addVarSym(std::string _vname, const std::string& _vtype);
+    funcsym(const _typeinfo_t& ret_type, const params_def_list& parameters_list, const std::vector<StatementNode>& inner_statements);
+    void addVarSym(const std::string& _vname, const _typeinfo_t& _vtype);
     
-    const std::string& getRetType() const;
+    const _typeinfo_t& getRetType() const;
     const params_def_list& getParamsList() const;
     std::vector<StatementNode>& getStatements();
-    const std::unordered_map<std::string, std::string>& getVarTable() const;
+    const std::unordered_map<std::string, _typeinfo_t>& getVarTable() const;
 
     void delete_mem();
 private:
-    std::string ret_type;
+    _typeinfo_t ret_type;
     params_def_list parameters_list;
-    std::unordered_map<std::string, std::string> vartypes_table;
+    std::unordered_map<std::string, _typeinfo_t> vartypes_table;
     std::vector<StatementNode> inner_statements;
 };
 
 class funcproto {
 public:
-    funcproto(const std::string& ret_type, params_def_list parameters_list);
-    funcproto(const std::string& ret_type, params_def_list parameters_list, bool isres);
+    funcproto(const _typeinfo_t& ret_type, const params_def_list& parameters_list);
+    funcproto(const _typeinfo_t& ret_type, const params_def_list& parameters_list, bool isres);
 
     void setAsResolved();
     bool isResolved() const;
     
-    const std::string& getRetType() const;
+    const _typeinfo_t& getRetType() const;
     const params_def_list& getParamsList() const;
 private:
     bool resolved = false;
 
-    std::string ret_type;
+    _typeinfo_t ret_type;
     params_def_list parameters_list;
 };

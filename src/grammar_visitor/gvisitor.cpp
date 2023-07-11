@@ -43,7 +43,7 @@ void gvisitor::visitGlobal_statement(relcgrammarParser::Global_statementContext 
 
         if (native_prototypes.count(nfname)) report_err(fmt::format("redifition of native function '{}'", nfname), ctx->getStart()->getLine());
 
-        native_prototypes.insert({nfname, { nflib, nfproto }});
+        native_prototypes.emplace(nfname, std::make_pair(nflib, nfproto));
 
         function_parameters.clear();
     }
@@ -53,7 +53,7 @@ void gvisitor::visitGlobal_statement(relcgrammarParser::Global_statementContext 
 
         if (prototypes.count(proto.first)) report_err("redifition of function '" + proto.first + "'", ctx->getStart()->getLine());
 
-        prototypes.insert({proto.first, fproto});
+        prototypes.emplace(proto.first, fproto);
 
         function_parameters.clear();
     }
@@ -62,7 +62,7 @@ void gvisitor::visitGlobal_statement(relcgrammarParser::Global_statementContext 
         funcsym& fsym = func.second;
 
         for (const auto& _vdef : function_local_vars) {
-            fsym.addVarSym(_vdef._name, _vdef._type);
+            fsym.addVarSym(_vdef._name, _vdef._tinfo);
         }
         temp_program->addFunction(func.first, fsym);
 
