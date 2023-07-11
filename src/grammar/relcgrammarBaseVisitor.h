@@ -15,6 +15,18 @@
 class  relcgrammarBaseVisitor : public relcgrammarVisitor {
 public:
 
+  virtual std::any visitPlain_type(relcgrammarParser::Plain_typeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitPointer_type(relcgrammarParser::Pointer_typeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitType(relcgrammarParser::TypeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitProgram(relcgrammarParser::ProgramContext *ctx) override {
     return visitChildren(ctx);
   }

@@ -1,7 +1,7 @@
 grammar relcgrammar;
 
-LONG_LITERAL: ('-')?[0-9]+('U')?'L'('L')?;
-INT_LITERAL: ('-')?[0-9]+('U')?;
+LONG_LITERAL: ('-'|'+')?[0-9]+('U')?'L'('L')?;
+INT_LITERAL: ('-'|'+')?[0-9]+('U')?;
 FLOAT_LITERAL: [0-9]+.[0-9]+;
 
 INTERNAL_TYPE: ('void'|'char'|'int'|'long long'|'long');
@@ -33,12 +33,14 @@ NATIVE_SCOPE: '::';
 WS: [ \t\r\n]+ -> skip;
 
 plain_type:
-	INTERNAL_TYPE
-	| CONST INTERNAL_TYPE
+	CONST INTERNAL_TYPE
 	| INTERNAL_TYPE CONST
+	| INTERNAL_TYPE
 	;
 pointer_type:
-	plain_type ('*')+ CONST;
+	plain_type (ptrsym += '*')+ CONST
+	| plain_type (ptrsym += '*')+
+	;
 type:
 	pointer_type
 	| plain_type
@@ -70,6 +72,8 @@ exp:
 	| exp DIV exp
 	| exp PLUS exp
 	| exp MINUS exp	
+	| ptrderef='*' exp
+	| ptrgetref='&' ID
 	| native_call
 	| ID LPAREN arguments_list RPAREN
 	| ID LPAREN RPAREN

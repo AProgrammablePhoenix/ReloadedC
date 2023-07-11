@@ -19,6 +19,12 @@ public:
   /**
    * Visit parse trees produced by relcgrammarParser.
    */
+    virtual std::any visitPlain_type(relcgrammarParser::Plain_typeContext *context) = 0;
+
+    virtual std::any visitPointer_type(relcgrammarParser::Pointer_typeContext *context) = 0;
+
+    virtual std::any visitType(relcgrammarParser::TypeContext *context) = 0;
+
     virtual std::any visitProgram(relcgrammarParser::ProgramContext *context) = 0;
 
     virtual std::any visitGlobal_statement(relcgrammarParser::Global_statementContext *context) = 0;

@@ -12,10 +12,10 @@
 class  relcgrammarLexer : public antlr4::Lexer {
 public:
   enum {
-    LONG_LITERAL = 1, INT_LITERAL = 2, FLOAT_LITERAL = 3, TYPE = 4, CONST = 5, 
-    NativeProtoDecl = 6, ID = 7, CHAR = 8, PLUS = 9, MINUS = 10, MULT = 11, 
-    DIV = 12, EQUAL = 13, SEMI = 14, COMMA = 15, LPAREN = 16, RPAREN = 17, 
-    LCURL = 18, RCURL = 19, NATIVE_SCOPE = 20, WS = 21
+    T__0 = 1, LONG_LITERAL = 2, INT_LITERAL = 3, FLOAT_LITERAL = 4, INTERNAL_TYPE = 5, 
+    CONST = 6, NativeProtoDecl = 7, ID = 8, CHAR = 9, PLUS = 10, MINUS = 11, 
+    MULT = 12, DIV = 13, EQUAL = 14, SEMI = 15, COMMA = 16, LPAREN = 17, 
+    RPAREN = 18, LCURL = 19, RCURL = 20, NATIVE_SCOPE = 21, WS = 22
   };
 
   explicit relcgrammarLexer(antlr4::CharStream *input);

@@ -12,18 +12,19 @@
 class  relcgrammarParser : public antlr4::Parser {
 public:
   enum {
-    LONG_LITERAL = 1, INT_LITERAL = 2, FLOAT_LITERAL = 3, TYPE = 4, CONST = 5, 
-    NativeProtoDecl = 6, ID = 7, CHAR = 8, PLUS = 9, MINUS = 10, MULT = 11, 
-    DIV = 12, EQUAL = 13, SEMI = 14, COMMA = 15, LPAREN = 16, RPAREN = 17, 
-    LCURL = 18, RCURL = 19, NATIVE_SCOPE = 20, WS = 21
+    T__0 = 1, LONG_LITERAL = 2, INT_LITERAL = 3, FLOAT_LITERAL = 4, INTERNAL_TYPE = 5, 
+    CONST = 6, NativeProtoDecl = 7, ID = 8, CHAR = 9, PLUS = 10, MINUS = 11, 
+    MULT = 12, DIV = 13, EQUAL = 14, SEMI = 15, COMMA = 16, LPAREN = 17, 
+    RPAREN = 18, LCURL = 19, RCURL = 20, NATIVE_SCOPE = 21, WS = 22
   };
 
   enum {
-    RuleProgram = 0, RuleGlobal_statement = 1, RuleStatement = 2, RuleAssignment = 3, 
-    RuleInitialization = 4, RuleExp = 5, RuleNative_call = 6, RuleArguments_list = 7, 
-    RuleParameter = 8, RuleParameters_list = 9, RuleNative_func_prototype = 10, 
-    RuleFunc_prototype = 11, RuleFunc_declaration = 12, RuleScope = 13, 
-    RuleBordered_scope = 14, RuleFunc_scope = 15, RuleFunc_body = 16
+    RulePlain_type = 0, RulePointer_type = 1, RuleType = 2, RuleProgram = 3, 
+    RuleGlobal_statement = 4, RuleStatement = 5, RuleAssignment = 6, RuleInitialization = 7, 
+    RuleExp = 8, RuleNative_call = 9, RuleArguments_list = 10, RuleParameter = 11, 
+    RuleParameters_list = 12, RuleNative_func_prototype = 13, RuleFunc_prototype = 14, 
+    RuleFunc_declaration = 15, RuleScope = 16, RuleBordered_scope = 17, 
+    RuleFunc_scope = 18, RuleFunc_body = 19
   };
 
   explicit relcgrammarParser(antlr4::TokenStream *input);
@@ -43,6 +44,9 @@ public:
   antlr4::atn::SerializedATNView getSerializedATN() const override;
 
 
+  class Plain_typeContext;
+  class Pointer_typeContext;
+  class TypeContext;
   class ProgramContext;
   class Global_statementContext;
   class StatementContext;
@@ -60,6 +64,52 @@ public:
   class Bordered_scopeContext;
   class Func_scopeContext;
   class Func_bodyContext; 
+
+  class  Plain_typeContext : public antlr4::ParserRuleContext {
+  public:
+    Plain_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *CONST();
+    antlr4::tree::TerminalNode *INTERNAL_TYPE();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Plain_typeContext* plain_type();
+
+  class  Pointer_typeContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *s12 = nullptr;
+    std::vector<antlr4::Token *> ptrsym;
+    Pointer_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    Plain_typeContext *plain_type();
+    antlr4::tree::TerminalNode *CONST();
+    std::vector<antlr4::tree::TerminalNode *> MULT();
+    antlr4::tree::TerminalNode* MULT(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Pointer_typeContext* pointer_type();
+
+  class  TypeContext : public antlr4::ParserRuleContext {
+  public:
+    TypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    Pointer_typeContext *pointer_type();
+    Plain_typeContext *plain_type();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  TypeContext* type();
 
   class  ProgramContext : public antlr4::ParserRuleContext {
   public:
@@ -125,8 +175,7 @@ public:
   public:
     InitializationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *CONST();
-    antlr4::tree::TerminalNode *TYPE();
+    TypeContext *type();
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *EQUAL();
     ExpContext *exp();
@@ -140,20 +189,22 @@ public:
 
   class  ExpContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *ptrderef = nullptr;
+    antlr4::Token *ptrgetref = nullptr;
     ExpContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LPAREN();
     std::vector<ExpContext *> exp();
     ExpContext* exp(size_t i);
     antlr4::tree::TerminalNode *RPAREN();
-    Native_callContext *native_call();
+    antlr4::tree::TerminalNode *MULT();
     antlr4::tree::TerminalNode *ID();
+    Native_callContext *native_call();
     Arguments_listContext *arguments_list();
     antlr4::tree::TerminalNode *LONG_LITERAL();
     antlr4::tree::TerminalNode *INT_LITERAL();
     antlr4::tree::TerminalNode *FLOAT_LITERAL();
     antlr4::tree::TerminalNode *CHAR();
-    antlr4::tree::TerminalNode *MULT();
     antlr4::tree::TerminalNode *DIV();
     antlr4::tree::TerminalNode *PLUS();
     antlr4::tree::TerminalNode *MINUS();
@@ -202,9 +253,8 @@ public:
   public:
     ParameterContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *TYPE();
+    TypeContext *type();
     antlr4::tree::TerminalNode *ID();
-    antlr4::tree::TerminalNode *CONST();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -264,7 +314,7 @@ public:
   public:
     Func_declarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *TYPE();
+    TypeContext *type();
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *LPAREN();
     Parameters_listContext *parameters_list();
