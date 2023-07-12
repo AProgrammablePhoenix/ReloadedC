@@ -14,6 +14,8 @@ ID: [a-zA-Z_][a-zA-Z0-9_]*;
 fragment ESC: '\\' .;
 CHAR: '\'' (ESC|.) '\'';
 
+STRING: '"' (ESC|.)*? '"';
+
 PLUS: '+';
 MINUS: '-';
 MULT: '*';
@@ -83,7 +85,8 @@ exp:
 	| LONG_LITERAL
 	| INT_LITERAL
 	| FLOAT_LITERAL
-	| CHAR	
+	| CHAR
+	| STRING
 	;
 native_call: NATIVE_SCOPE ID LPAREN (arguments_list)? RPAREN;
 arguments_list:	exp (COMMA exp)*;

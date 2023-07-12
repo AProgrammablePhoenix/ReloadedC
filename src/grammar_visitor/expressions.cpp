@@ -11,6 +11,27 @@
 
 #include "gvisitor.hpp"
 
+namespace {
+    static char process_escape_sequence(char c, size_t line) {
+        switch (c) {
+            case '\'': return '\'';
+            case '\"': return '\"';
+            case '\?': return '\?';
+            case '\\': return '\\';
+            case 'a' : return '\a';
+            case 'b' : return '\b';
+            case 'f' : return '\f';
+            case 'n' : return '\n';
+            case 'r' : return '\r';
+            case 't' : return '\t';
+            case 'v' : return '\v';
+            default: {
+                report_err("invalid escape sequence: \\" + c, line);
+            }
+        }
+    }
+}
+
 std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) {
     if (ctx->native_call()) return visitNative_call(ctx->native_call());
     else if (ctx->ID()) {
@@ -111,26 +132,36 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
     else if (ctx->CHAR()) {
         char c = ctx->CHAR()->getText()[1];
 
-        if (c == '\\') {
-            switch (ctx->CHAR()->getText()[2]) {
-                case '\'': c = '\''; break;
-                case '\"': c = '\"'; break;
-                case '\?': c = '\?'; break;
-                case '\\': c = '\\'; break;
-                case 'a' : c = '\a'; break;
-                case 'b' : c = '\b'; break;
-                case 'f' : c = '\f'; break;
-                case 'n' : c = '\n'; break;
-                case 'r' : c = '\r'; break;
-                case 't' : c = '\t'; break;
-                case 'v' : c = '\v'; break;
-                default: {
-                    report_err("invalid escape sequence: " + ctx->CHAR()->getText(), ctx->CHAR()->getSymbol()->getLine());
-                }
-            }
+        if (c == '\'') {
+            report_err("invalid character in character literal: " + c, ctx->CHAR()->getSymbol()->getLine());
+        }
+        else if (c == '\\') {
+            c = process_escape_sequence(ctx->CHAR()->getText()[2], ctx->CHAR()->getSymbol()->getLine());
         }
 
         return std::make_shared<CharNode>(ctx->CHAR()->getSymbol()->getLine(), c);
+    }
+    else if (ctx->STRING()) {
+        std::string raw = ctx->STRING()->getText();
+        const size_t length = raw.size() - 1;
+
+        std::string temp = "";
+        temp.reserve(length + 1);
+        
+        for (size_t i = 1; i < length; ++i) {
+            char c = raw[i];
+
+            if (c == '\"') {
+                report_err("invalid character in string literal: " + c, ctx->STRING()->getSymbol()->getLine());
+            }
+            else if (c == '\\') {
+                c = process_escape_sequence(raw[i + 1], ctx->STRING()->getSymbol()->getLine());
+            }
+
+            temp += c;
+        }
+
+        return std::make_shared<StringNode>(ctx->STRING()->getSymbol()->getLine(), temp);
     }
     else if (ctx->ptrderef) {
         auto* exp_ctx = ctx->exp(0);

@@ -13,9 +13,10 @@ class  relcgrammarLexer : public antlr4::Lexer {
 public:
   enum {
     T__0 = 1, LONG_LITERAL = 2, INT_LITERAL = 3, FLOAT_LITERAL = 4, INTERNAL_TYPE = 5, 
-    CONST = 6, NativeProtoDecl = 7, ID = 8, CHAR = 9, PLUS = 10, MINUS = 11, 
-    MULT = 12, DIV = 13, EQUAL = 14, SEMI = 15, COMMA = 16, LPAREN = 17, 
-    RPAREN = 18, LCURL = 19, RCURL = 20, NATIVE_SCOPE = 21, WS = 22
+    CONST = 6, NativeProtoDecl = 7, ID = 8, CHAR = 9, STRING = 10, PLUS = 11, 
+    MINUS = 12, MULT = 13, DIV = 14, EQUAL = 15, SEMI = 16, COMMA = 17, 
+    LPAREN = 18, RPAREN = 19, LCURL = 20, RCURL = 21, NATIVE_SCOPE = 22, 
+    WS = 23
   };
 
   explicit relcgrammarLexer(antlr4::CharStream *input);

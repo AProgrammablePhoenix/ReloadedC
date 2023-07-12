@@ -13,3 +13,6 @@ void FloatNode::accept(Visitor& v) {
 void CharNode::accept(Visitor& v) {
     v.visit(this);
 }
+void StringNode::accept(Visitor& v) {
+    v.visit(this);
+}
