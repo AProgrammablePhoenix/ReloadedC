@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 
 struct _typeinfo_t {
     // general data
@@ -16,7 +17,7 @@ struct _typeinfo_t {
 
     // pointer data
     bool _isptr = false;
-    bool _isptrtoconst = false;
+    std::shared_ptr<_typeinfo_t> ptrderef_tinfo = nullptr;
     bool _isvoidptr = false;
     int _ptrlvl = 0;
 };

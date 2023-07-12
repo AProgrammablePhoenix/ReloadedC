@@ -30,12 +30,13 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
                 report_err("lvalue required as unary '&' operand: &" + id, id_line);
             }
 
-            _typeinfo_t ret_type = id_type;
-            ret_type._isptrtoconst = ret_type._isconst;
+            _typeinfo_t ret_type;
             ret_type._isconst = false;
             ret_type._isptr = true;
-            ret_type._ptrlvl += 1;
-            ret_type._type += "*";
+            ret_type._isvoidptr = id_type._isvoidptr;
+            ret_type._ptrlvl = id_type._ptrlvl + 1;
+            ret_type._type = id_type._type + '*';
+            ret_type.ptrderef_tinfo = std::make_shared<_typeinfo_t>(id_type);
 
             return std::make_shared<AddressofNode>(id_ctx->getSymbol()->getLine(), id_node, ret_type);
         }
@@ -139,14 +140,7 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
             report_err("cannot dereference a non pointer expression: " + exp_ctx->getText(), exp_ctx->getStart()->getLine());
         }
 
-        _typeinfo_t ret_type = exp->getRetType();
-        ret_type._isconst = ret_type._isptrtoconst;
-        ret_type._isptrtoconst = false;
-        ret_type._ptrlvl -= 1;
-        ret_type._isptr = ret_type._ptrlvl > 0;
-        ret_type._type.resize(ret_type._type.size() - 1);
-
-        return std::make_shared<DereferenceNode>(exp_ctx->getStart()->getLine(), std::move(exp), ret_type);
+        return std::make_shared<DereferenceNode>(exp_ctx->getStart()->getLine(), std::move(exp), *exp->getRetType().ptrderef_tinfo);
     }
     else if (ctx->exp().size() == 2) {
         auto* left_exp_ctx  = ctx->exp(0);

@@ -17,16 +17,16 @@ inline constexpr char _internal_imm_num[] = "imm_num";
 inline constexpr char _internal_imm_flt[] = "imm_flt";
 inline constexpr char _internal_imm_chr[] = "imm_chr";
 
-inline constexpr _typeinfo_t _internal_int = {
+inline const _typeinfo_t _internal_int = {
     ._type = "int"
 };
-inline constexpr _typeinfo_t _internal_long = {
+inline const _typeinfo_t _internal_long = {
     ._type = "long"
 };
-inline constexpr _typeinfo_t _internal_float = {
+inline const _typeinfo_t _internal_float = {
     ._type = "float"
 };
-inline constexpr _typeinfo_t _internal_char = {
+inline const _typeinfo_t _internal_char = {
     ._type = "char"
 };
 

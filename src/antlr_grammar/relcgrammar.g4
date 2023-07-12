@@ -38,8 +38,10 @@ plain_type:
 	| INTERNAL_TYPE
 	;
 pointer_type:
-	plain_type (ptrsym += '*')+ CONST
-	| plain_type (ptrsym += '*')+
+	pointer_type '*' CONST
+	| pointer_type '*'
+	| plain_type '*' CONST
+	| plain_type '*'
 	;
 type:
 	pointer_type

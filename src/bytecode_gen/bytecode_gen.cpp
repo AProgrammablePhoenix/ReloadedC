@@ -126,8 +126,8 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
         size_t ws_pos = line.find(' ');
         std::string op = std::string(line.substr(0, ws_pos));
 
-        if (prefix.has_value() && !size_prefixed_ops.count(op)) {
-            report_err(fmt::format("operation '{}' can't be prefixed by a size prefix", op), lineno + 1);
+        if (prefix.has_value() && !size_prefixed_ops.contains(op)) {
+            report_err(fmt::format("operation '{}' can't be prefixed by a size prefix {:#x}", op, prefix.value()), lineno + 1);
         }
         else if (prefix.has_value()) {
             this->bytecode.push_back(prefix.value());

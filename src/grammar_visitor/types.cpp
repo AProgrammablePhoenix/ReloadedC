@@ -20,35 +20,11 @@ namespace {
         return primitive_types.contains(t._type) && !t._isfloat;
     }
 
-    static bool are_types_equal(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
-        if (t_in._type != t_out._type) {
-            return false;
-        }
-        else if (t_in._isptr != t_out._isptr) {
-            return false;
-        }
-        else if (t_in._isptrtoconst != t_out._isptrtoconst) {
-            return false;
-        }
-        else if (t_in._ptrlvl != t_out._ptrlvl) {
-            return false;
-        }
-        else if (t_in._isptrtoconst != t_out._isptrtoconst) {
-            return false;
-        }
-        else if (t_in._isfloat != t_out._isfloat) {
-            return false;
-        }
-
-        return true;
-    }
     static bool are_pointers_compatible(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
-        std::cout << t_in._isptrtoconst << ":" << t_out._isptrtoconst << "\n";
-
         if (!t_in._isptr || !t_out._isptr) {
             return false;
         }
-        else if (t_in._isptrtoconst && !t_out._isptrtoconst) {
+        else if (t_in.ptrderef_tinfo->_isconst && !t_out.ptrderef_tinfo->_isconst) {
             return false;
         }
         else if (t_in._ptrlvl != t_out._ptrlvl) {
@@ -58,56 +34,88 @@ namespace {
             return false;
         }
 
+        return t_in._ptrlvl < 2 ? true : are_pointers_compatible(*t_in.ptrderef_tinfo, *t_out.ptrderef_tinfo);
+    }
+    static bool are_types_equal(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
+        if (t_in._type != t_out._type) {
+            return false;
+        }
+        else if (t_in._isptr != t_out._isptr) {
+            return false;
+        }
+        else if (t_in._isptr && t_out._isptr) {
+            auto sub_t_in  = *t_in.ptrderef_tinfo;
+            auto sub_t_out = *t_out.ptrderef_tinfo;
+
+            if (!are_types_equal(sub_t_in, sub_t_out) || !are_pointers_compatible(sub_t_in, sub_t_out)) {
+                return false;
+            }
+        }
+        else if (t_in._ptrlvl != t_out._ptrlvl) {
+            return false;
+        }
+        else if (t_in._isfloat != t_out._isfloat) {
+            return false;
+        }
+
         return true;
     }
 
+    static _typeinfo_t visitPlainType(relcgrammarParser::Plain_typeContext* ctx) {
+        _typeinfo_t _tinfo;
+
+        _tinfo._isptr = false;
+        _tinfo._isvoidptr = false;
+        _tinfo.ptrderef_tinfo = nullptr;
+        _tinfo._ptrlvl = 0;
+
+        if (ctx->CONST()) {
+            _tinfo._isconst = true;
+        }
+
+        // when unsigned keyword is introduced -> change signedness of type depending on its presence
+
+        std::string rawtype = ctx->INTERNAL_TYPE()->getText();
+        if (rawtype == "long long") {
+            rawtype = "long";
+        }
+
+        _tinfo._type = rawtype;
+        _tinfo._isfloat = float_types.contains(rawtype);
+
+        return _tinfo;
+    }
+    static _typeinfo_t visitPtrType(relcgrammarParser::Pointer_typeContext* ctx) {
+        _typeinfo_t _tinfo;
+
+        _tinfo._isptr = true;
+        if (ctx->CONST()) {
+            _tinfo._isconst = true;
+        }
+
+        _typeinfo_t dereftinfo;
+        if (ctx->pointer_type()) {
+            dereftinfo = visitPtrType(ctx->pointer_type());
+        }
+        else {
+            dereftinfo = visitPlainType(ctx->plain_type());
+        }
+
+        _tinfo._ptrlvl = dereftinfo._ptrlvl + 1;
+        _tinfo._type = dereftinfo._type + '*';
+        _tinfo.ptrderef_tinfo = std::make_shared<_typeinfo_t>(dereftinfo);
+        _tinfo._isvoidptr = dereftinfo._isvoidptr || dereftinfo._type == "void";
+
+        return _tinfo;
+    }
 }
 
 _typeinfo_t gvisitor::visitType(relcgrammarParser::TypeContext* ctx) {
-    _typeinfo_t _tinfo;
-
-    relcgrammarParser::Plain_typeContext* plain_ctx = nullptr;
-
     if (ctx->pointer_type()) {
-        auto* ptr_info = ctx->pointer_type();
-        if (ptr_info->CONST()) {
-            _tinfo._isconst = true;
-        }
-
-        _tinfo._isptr = true;
-        _tinfo._ptrlvl = ptr_info->ptrsym.size();
-        _tinfo._type.reserve(_tinfo._ptrlvl);
-        for (size_t i = 0; i < _tinfo._ptrlvl; ++i) {
-            _tinfo._type += "*";
-        }
-
-        plain_ctx = ptr_info->plain_type();
+        return visitPtrType(ctx->pointer_type());
     }
-    else {
-        plain_ctx = ctx->plain_type();
-    }
-
-    if (plain_ctx->CONST()) {
-        if (_tinfo._isptr) {
-            _tinfo._isptrtoconst = true;
-        }
-        else {
-            _tinfo._isconst = true;
-        }
-    }
-
-    std::string rawtype = plain_ctx->INTERNAL_TYPE()->getText();
-    if (rawtype == "long long") {
-        rawtype = "long";
-    }
-    else if (rawtype == "void" && _tinfo._isptr) {
-        _tinfo._isvoidptr = true;
-    }
-
-    _tinfo._type = rawtype + _tinfo._type;
-    _tinfo._isfloat = float_types.contains(rawtype); // if it's a pointer, only stores the base type
-
-    return _tinfo;
+    
+    return visitPlainType(ctx->plain_type());
 }
 
 // TODO:
@@ -118,7 +126,6 @@ bool is_implicit_convertible(const _typeinfo_t& t_in, const _typeinfo_t& t_out, 
         return true;
     }
     else if (t_in._isptr && t_out._isptr) {
-        std::cout << in_out << "\n";
         bool _cmp_in_out = are_pointers_compatible(t_in, t_out);
         if (_cmp_in_out) {
             return true;

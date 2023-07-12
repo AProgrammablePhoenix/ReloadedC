@@ -101,7 +101,7 @@ namespace VM_Bytecode {
         "cd",
         "cq",
 
-        "secb"
+        "secb",
         "secw",
         "secd",
         "secq"

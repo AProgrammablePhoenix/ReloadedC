@@ -81,14 +81,12 @@ public:
 
   class  Pointer_typeContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s12 = nullptr;
-    std::vector<antlr4::Token *> ptrsym;
     Pointer_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Plain_typeContext *plain_type();
+    antlr4::tree::TerminalNode *MULT();
     antlr4::tree::TerminalNode *CONST();
-    std::vector<antlr4::tree::TerminalNode *> MULT();
-    antlr4::tree::TerminalNode* MULT(size_t i);
+    Pointer_typeContext *pointer_type();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -96,7 +94,7 @@ public:
   };
 
   Pointer_typeContext* pointer_type();
-
+  Pointer_typeContext* pointer_type(int precedence);
   class  TypeContext : public antlr4::ParserRuleContext {
   public:
     TypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -388,6 +386,7 @@ public:
 
   bool sempred(antlr4::RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) override;
 
+  bool pointer_typeSempred(Pointer_typeContext *_localctx, size_t predicateIndex);
   bool expSempred(ExpContext *_localctx, size_t predicateIndex);
 
   // By default the static state used to implement the parser is lazily initialized during the first
