@@ -16,6 +16,7 @@ public:
     virtual void visit(LongNode* node);
     virtual void visit(FloatNode* node);
     virtual void visit(CharNode* node);
+    virtual void visit(StringNode* node);
     virtual void visit(ConversionNode* node);
     virtual void visit(MathNode* node);
     virtual void visit(FunctionCall* node);

@@ -14,6 +14,8 @@ namespace {
     static std::unordered_map<std::string, uintmax_t> vars_disp;
     static std::ofstream output_file;
 
+    static uintmax_t data_var = 0;
+
     inline uintmax_t compute_type_size(const _typeinfo_t& _tinfo) {
         if (_tinfo._isptr) {
             return sizeof(void*);
@@ -134,6 +136,12 @@ void Visitor::visit(FloatNode* node) {
 }
 void Visitor::visit(CharNode* node) {
     output_file << (uint16_t)node->getValue() << "\n";
+}
+void Visitor::visit(StringNode* node) {
+    const std::string& str = node->getValue();
+    output_file << ".string " << str << "\n";
+    output_file << "ldptr " << data_var << "\n";
+    ++data_var;
 }
 void Visitor::visit(ConversionNode* node) {
     static const std::unordered_map<std::string, std::string> conv_ops_map = {
