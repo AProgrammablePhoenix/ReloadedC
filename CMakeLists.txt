@@ -4,10 +4,19 @@ project(relc)
 
 find_package(fmt)
 
-add_custom_target(AntlrRelcGrammar
-    COMMAND bash -ic [[antlr4 -Dlanguage=Cpp src/antlr_grammar/relcgrammar.g4 -no-listener -visitor -Xexact-output-dir -o src/grammar]]
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
+# only set SKIP_ANTLR to TRUE if you are sure that the grammar file won't change in the near future
+# if it changes, just rebuild cmake without any arguments (e.g. "cmake .." instead of "cmake -DSKIP_ANTLR:BOOL=1 ..")
+
+if ((NOT DEFINED SKIP_ANTLR) OR (SKIP_ANTLR EQUAL 0))
+    message("Antlr-4 generation enabled")
+
+    add_custom_target(AntlrRelcGrammar
+        COMMAND bash -ic [[antlr4 -Dlanguage=Cpp src/antlr_grammar/relcgrammar.g4 -no-listener -visitor -Xexact-output-dir -o src/grammar]]
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+else()
+    message("Antlr-4 generation disabled")
+endif()
 
 aux_source_directory("src/grammar" AntlrRelcGrammarSources)
 aux_source_directory("src/grammar_visitor" RelcGrammarSources)
@@ -43,7 +52,10 @@ add_executable(relcvm
     "src/relcvm/main.cpp"
 )
 
-add_dependencies(RelcGrammar AntlrRelcGrammar)
+if ((NOT DEFINED SKIP_ANTLR) OR (SKIP_ANTLR EQUAL 0))
+    add_dependencies(RelcGrammar AntlrRelcGrammar)
+endif()
+
 target_include_directories(RelcGrammar PUBLIC
     "/usr/local/include/antlr4-runtime"
 )
@@ -87,3 +99,6 @@ install(TARGETS
 install(FILES ${VLIBC_HEADERS}
     DESTINATION ${VLIBC_HEADERS_INSTALL_DIR}
 )
+
+# just to make sure Antlr generation is enabled if "cmake .." is run after "cmake -DSKIP_ANTLR:BOOL=1 .."
+unset(SKIP_ANTLR CACHE)
