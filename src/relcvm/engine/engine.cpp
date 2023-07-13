@@ -8,6 +8,8 @@
 #include "engine/voperations.hpp"
 #include "engine/engine.hpp"
 
+#include "bytecode_gen/bytecode_gen.hpp"
+
 namespace {    
     struct operation_context {
         void(*vop)(call_context&);
@@ -18,12 +20,16 @@ namespace {
     struct executable {
         std::unordered_map<size_t, size_t> index_mapping;
         std::vector<operation_context> vops;
+        std::vector<uint8_t> static_data;
     };
 
     executable decode_bytecode(const std::vector<uint8_t>& bytecode) {
-        const uint64_t bytecode_size = *(const uint64_t*)bytecode.data();
+        const bytecode_header header = *(const bytecode_header*)bytecode.data();
 
-        std::span<const uint8_t> natcall_symbol_table(bytecode.data() + sizeof(uint64_t) + bytecode_size, bytecode.size() - sizeof(uint64_t) - bytecode_size);
+        std::span<const uint8_t> natcall_symbol_table(
+            bytecode.data() + sizeof(bytecode_header) + header.bytecode_size,
+            header.data_section_offset - header.bytecode_size- sizeof(bytecode_header)
+        );
 
         std::vector<std::vector<uint8_t>> natcall_symbols;
         for (size_t i = 0; i < natcall_symbol_table.size();) {
@@ -36,7 +42,12 @@ namespace {
             i += entry_length;
         }
 
-        std::span<const uint8_t> exe_bytecode(bytecode.data() + sizeof(uint64_t), bytecode_size);
+        std::vector<uint8_t> data_section(
+            bytecode.data() + header.data_section_offset,
+            bytecode.data() + bytecode.size()
+        );
+
+        std::span<const uint8_t> exe_bytecode(bytecode.data() + sizeof(bytecode_header), header.bytecode_size);
 
         std::unordered_map<size_t, size_t> index_mapping;
         std::vector<operation_context> vops;
@@ -45,9 +56,9 @@ namespace {
         // allocate at least some space to reduce the number of reallocations
         // each pair of opcode + prefix occupies 2 bytes (without optional arguments)
         // bytecode_size / 2 is not the real amount of instructions, but something closer to it than just bytecode_size itself
-        vops.reserve(bytecode_size / 2);
+        vops.reserve(header.bytecode_size / 2);
 
-        for (size_t i = 0; i < bytecode_size; ++i) {
+        for (size_t i = 0; i < header.bytecode_size; ++i) {
             current_vop = operation_context();
             index_mapping.emplace(i + sizeof(uint64_t), vops.size());
 
@@ -84,7 +95,7 @@ namespace {
                 i += arg_size;
                 --i;
             }
-            else if (reverse_control_flow.contains(byte)) {
+            else if (reverse_control_flow.contains(byte) || byte == VM_Bytecode::opcodes.at("ldptr")) {
                 constexpr size_t arg_size = sizeof(uint64_t);
                 current_vop.args.reserve(arg_size);
 
@@ -111,11 +122,12 @@ namespace {
 
         return executable{
             .index_mapping = index_mapping,
-            .vops = vops
+            .vops = vops,
+            .static_data = data_section
         };
     }
 
-    void engine_core(const executable& _exec) {
+    void engine_core(executable& _exec) {
         const auto& vops = _exec.vops;
 
         size_t ip = 0;
@@ -125,7 +137,7 @@ namespace {
         std::vector<std::pair<uint64_t, std::array<uint8_t, 0xFFFF>>> saved_locals;
         std::unordered_map<std::string, void*> external_libs;
 
-        execution_context ectx(_exec.index_mapping);
+        execution_context ectx(_exec.index_mapping, _exec.static_data);
 
         for (; ip < vops.size() && running_state; ++ip) {
             const auto& vop_ctx = vops[ip];
@@ -147,6 +159,6 @@ namespace {
 }
 
 void engine_execute(const std::vector<uint8_t>& bytecode) {
-    const auto vops = decode_bytecode(bytecode);
+    auto vops = decode_bytecode(bytecode);
     engine_core(vops);
 }

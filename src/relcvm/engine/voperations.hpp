@@ -29,6 +29,7 @@ extern void(*vror)(call_context&);
 // memory operations
 extern void(*vload_c)(call_context&);
 extern void(*vload_v)(call_context&);
+extern void(*vldptr)(call_context&);
 extern void(*vstore)(call_context&);
 
 // control flow
@@ -80,6 +81,7 @@ const std::unordered_map<uint8_t, void(*)(call_context&)> opcodes_map = {
 
     { opcodes.at("load_c"), vload_c },
     { opcodes.at("load_v"), vload_v },
+    { opcodes.at("ldptr"), vldptr },
     { opcodes.at("store"), vstore },
 
     { opcodes.at("call"), vcall },

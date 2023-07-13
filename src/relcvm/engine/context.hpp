@@ -86,12 +86,13 @@ private:
 
 class execution_context {
 public:
-    execution_context(const std::unordered_map<size_t, size_t>& idx_mapping);    
+    execution_context(const std::unordered_map<size_t, size_t>& idx_mapping, std::vector<uint8_t>& _static_data);    
 
     execution_stack<16384>& get_operands_stack();
     std::array<uint8_t, 0xFFFF>& get_local_variables();
 
     const std::unordered_map<size_t, size_t>& index_mapping;
+    std::vector<uint8_t>& static_data;
 private:
     execution_stack<16384> operands_stack;
     std::array<uint8_t, 0xFFFF> local_variables;

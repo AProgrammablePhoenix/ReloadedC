@@ -88,8 +88,18 @@ namespace {
         uint16_t* i = (uint16_t*)ctx.args.data();
         vmem_impl[vmem_size](ctx.ectx, *i);
     }
+    void vldptr_handler(call_context& ctx) {
+        uint64_t offset = *(uint64_t*)ctx.args.data();
+        execution_context& ectx = ctx.ectx;
+
+        uint8_t* data_ptr = ectx.static_data.data() + offset;
+        
+        std::vector<uint8_t> raw_ptr((uint8_t*)&data_ptr, (uint8_t*)&data_ptr + sizeof(data_ptr));
+        ectx.get_operands_stack().push(raw_ptr);
+    }
 }
 
 auto vload_c = vload_c_handler;
 auto vload_v = vmem<vload_v_impl>;
+auto vldptr = vldptr_handler;
 auto vstore = vmem<vstore_impl>;

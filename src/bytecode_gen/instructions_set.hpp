@@ -12,7 +12,7 @@ namespace VM_Bytecode {
 
     namespace Assembling {
         const std::unordered_set<std::string> one_operand_ops = {
-            "load_c", "load_v", "store", "call"
+            "load_c", "load_v", "ldptr", "store", "call"
         };
         const std::unordered_set<std::string> two_operand_ops = {
             "natcall"
@@ -45,7 +45,8 @@ namespace VM_Bytecode {
 
         { "load_c", 0x12 }, // load constant
         { "load_v", 0x13 }, // load variable
-        { "store", 0x14 }, // store value
+        { "ldptr", 0x14 }, // load data pointer
+        { "store", 0x15 }, // store value
 
         { "call", 0x16 }, // call user defined procedure
         { "natcall", 0x17 }, // call native function

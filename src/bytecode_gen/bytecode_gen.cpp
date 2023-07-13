@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <optional>
 
 #include <array>
@@ -87,10 +88,14 @@ bytecode_gen::bytecode_gen(const std::string& filename) {
 const std::vector<uint8_t>& bytecode_gen::generate() {
     if (!in_source.is_open()) report_err("incorrect IL file was passed to bytecode generator", 0);
 
-    constexpr size_t sizeof_header = sizeof(uint64_t);
+    constexpr size_t sizeof_header = sizeof(bytecode_header);
+    bytecode_header header;
 
     std::unordered_map<std::string, std::pair<size_t, size_t>> labelsReprocessing;
     mapped_vector natcall_symbol_table;
+
+    std::vector<uint8_t> data_section;
+    std::unordered_map<size_t, size_t> data_index_map;
 
     std::string raw_line;
     for(size_t lineno = 0; std::getline(this->in_source, raw_line); ++lineno) {
@@ -100,7 +105,21 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
 
         if (line.empty() || line.starts_with("//")) continue;
         else if (line.starts_with("label ")) {
-            labels.insert({line.substr(6).data(), sizeof_header + this->bytecode.size() - 1});
+            labels.emplace(line.substr(6).data(), sizeof_header + this->bytecode.size() - 1);
+            continue;
+        }
+        else if (line.starts_with(".string ")) {
+            std::string _str = line.substr(8).data();
+            data_index_map.emplace(data_index_map.size(), data_section.size());
+
+            std::stringstream ss(_str);
+            size_t _temp_char;
+            
+            while (ss >> _temp_char) {
+                data_section.push_back(_temp_char);
+            }
+
+            data_section.push_back(0);
             continue;
         }
         else if (line.starts_with("[[BITS8]] ")) {
@@ -131,7 +150,7 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
         }
         else if (prefix.has_value()) {
             this->bytecode.push_back(prefix.value());
-        }    
+        }
         this->bytecode.push_back(opcodes.at(op));
 
         if (ws_pos == std::string::npos) continue;
@@ -160,9 +179,15 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
                 raw_bytes raw16 = get_raw_bytes<uint16_t>(n);
                 this->bytecode.insert(this->bytecode.end(), raw16.raw, raw16.raw + sizeof(uint16_t));
             }
+            else if (op == "ldptr") {
+                uint64_t idx = (uint64_t)std::stoull(arg.data());
+                uint64_t real_idx = data_index_map.at(idx);
+                raw_bytes raw64 = get_raw_bytes<uint64_t>(real_idx);
+                this->bytecode.insert(this->bytecode.end(), raw64.raw, raw64.raw + sizeof(uint64_t));
+            }
             else if (Assembling::control_flow.contains(op)) {
                 if (!labels.count(arg.data())) {
-                    labelsReprocessing.insert({arg.data(), {lineno + 1, this->bytecode.size()}});
+                    labelsReprocessing.emplace(arg.data(), std::make_pair(lineno + 1, this->bytecode.size()));
                     this->bytecode.resize(this->bytecode.size() + sizeof(uint64_t));
                     continue;
                 }
@@ -207,9 +232,9 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
         std::copy(raw_addr.raw, raw_addr.raw + sizeof(uint64_t), &this->bytecode[label_pair.second.second]);
     }
 
-    uint64_t bytecode_size = this->bytecode.size();
-    raw_bytes raw_size = get_raw_bytes<uint64_t>(bytecode_size);
-    std::vector<uint8_t> header(raw_size.raw, raw_size.raw + sizeof(uint64_t));
+    header.bytecode_size = this->bytecode.size();
+    raw_bytes raw_size = get_raw_bytes<bytecode_header>(header);
+    std::vector<uint8_t> raw_header(raw_size.raw, raw_size.raw + sizeof(bytecode_header));
 
     std::vector<uint8_t> raw_symbol_table;
     for (size_t i = 0; i < natcall_symbol_table.size(); ++i) {
@@ -223,8 +248,11 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
         raw_symbol_table.insert(raw_symbol_table.end(), (uint8_t*)symbol.second.data(), (uint8_t*)symbol.second.data() + sym_length.v);
     }
 
-    this->bytecode.insert(this->bytecode.begin(), header.cbegin(), header.cend());
+    this->bytecode.insert(this->bytecode.begin(), raw_header.cbegin(), raw_header.cend());
     this->bytecode.insert(this->bytecode.end(), raw_symbol_table.cbegin(), raw_symbol_table.cend());
+
+    (*(bytecode_header*)this->bytecode.data()).data_section_offset = this->bytecode.size();
+    this->bytecode.insert(this->bytecode.end(), data_section.cbegin(), data_section.cend());
 
     return this->bytecode;
 }

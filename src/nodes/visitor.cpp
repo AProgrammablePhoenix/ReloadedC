@@ -139,7 +139,11 @@ void Visitor::visit(CharNode* node) {
 }
 void Visitor::visit(StringNode* node) {
     const std::string& str = node->getValue();
-    output_file << ".string " << str << "\n";
+    output_file << ".string ";
+    for (size_t i = 0; i < str.size() - 1; ++i) {
+        output_file << (uint64_t)str[i] << " ";
+    }
+    output_file << (uint64_t)str.back() << "\n";
     output_file << "ldptr " << data_var << "\n";
     ++data_var;
 }

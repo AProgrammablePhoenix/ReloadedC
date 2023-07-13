@@ -156,6 +156,7 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
             }
             else if (c == '\\') {
                 c = process_escape_sequence(raw[i + 1], ctx->STRING()->getSymbol()->getLine());
+                ++i;
             }
 
             temp += c;
