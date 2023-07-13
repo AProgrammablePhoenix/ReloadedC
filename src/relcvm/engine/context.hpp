@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <memory>
 #include <stack>
 #include <unordered_map>
 #include <algorithm>
@@ -84,18 +85,25 @@ private:
     std::stack<uint8_t> stack;
 };
 
+template<size_t size> struct heap_array {
+    heap_array() {
+        this->storage = std::make_shared<std::array<uint8_t,size>>();
+    }
+    std::shared_ptr<std::array<uint8_t,size>> storage;
+};
+
 class execution_context {
 public:
     execution_context(const std::unordered_map<size_t, size_t>& idx_mapping, std::vector<uint8_t>& _static_data);    
 
     execution_stack<16384>& get_operands_stack();
-    std::array<uint8_t, 0xFFFF>& get_local_variables();
+    heap_array<0xFFFF>& get_local_variables();
 
     const std::unordered_map<size_t, size_t>& index_mapping;
     std::vector<uint8_t>& static_data;
 private:
     execution_stack<16384> operands_stack;
-    std::array<uint8_t, 0xFFFF> local_variables;
+    heap_array<0xFFFF> local_variables;
 };
 
 struct call_context {
@@ -107,6 +115,6 @@ struct call_context {
     execution_context& ectx;
     const std::vector<uint8_t>& args;
 
-    std::vector<std::pair<uint64_t, std::array<uint8_t, 0xFFFF>>>& saved_locals;
+    std::vector<std::pair<uint64_t, heap_array<0xFFFF>>>& saved_locals;
     std::unordered_map<std::string, void*>& external_libs;
 };

@@ -32,30 +32,30 @@ namespace {
     }
     template<uinteger T> void vload_v_core(execution_context& ectx, uint16_t i) {
         auto& stack = ectx.get_operands_stack();
-        auto& locals = ectx.get_local_variables();
+        auto& locals = ectx.get_local_variables().storage;
 
         if constexpr (std::is_same_v<T, uint8_t>) {
-            stack.push(locals[i]);
+            stack.push((*locals)[i]);
         }
         else {
             constexpr size_t op_size = sizeof(T);
-            std::vector<uint8_t> raw(locals.data() + i, locals.data() + i + op_size);
+            std::vector<uint8_t> raw(locals->data() + i, locals->data() + i + op_size);
             stack.push(raw);
         }
     }
     template<uinteger T> void vstore_core(execution_context& ectx, uint16_t i) {
         auto& stack = ectx.get_operands_stack();
-        auto& locals = ectx.get_local_variables();
+        auto& locals = ectx.get_local_variables().storage;
 
         if constexpr (std::is_same_v<T, uint8_t>) {
-            locals[i] = stack.pop();
+            (*locals)[i] = stack.pop();
         }
         else {
             constexpr size_t op_size = sizeof(T);
             std::vector<uint8_t> raw = stack.pop(op_size);
             std::reverse(raw.begin(), raw.end());
             for (size_t j = 0; j < op_size; ++j) {
-                locals[i + j] = raw[j];
+                (*locals)[i + j] = raw[j];
             }
         }
     }

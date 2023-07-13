@@ -134,7 +134,7 @@ namespace {
         bool running_state = true;
         int cmp_flag = 0;
 
-        std::vector<std::pair<uint64_t, std::array<uint8_t, 0xFFFF>>> saved_locals;
+        std::vector<std::pair<uint64_t, heap_array<0xFFFF>>> saved_locals;
         std::unordered_map<std::string, void*> external_libs;
 
         execution_context ectx(_exec.index_mapping, _exec.static_data);
