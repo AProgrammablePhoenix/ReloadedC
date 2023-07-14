@@ -33,6 +33,7 @@ int main(int argc, char* argv[]) {
             fmt::styled("error", fg(fmt::color::red)),
             argv[1]
         );
+        return 2;
     }
 
     engine_execute(bytecode);

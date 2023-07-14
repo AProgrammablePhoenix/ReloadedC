@@ -83,7 +83,10 @@ namespace {
                 i += arg_size;
                 --i;
             }
-            else if (byte == VM_Bytecode::opcodes.at("load_v") || byte == VM_Bytecode::opcodes.at("store")) {
+            else if (byte == VM_Bytecode::opcodes.at("load_v")
+                || byte == VM_Bytecode::opcodes.at("store")
+                || byte == VM_Bytecode::opcodes.at("mkptr")
+            ) {
                 constexpr size_t arg_size = sizeof(uint16_t);
                 current_vop.args.reserve(arg_size);
 
@@ -95,7 +98,10 @@ namespace {
                 i += arg_size;
                 --i;
             }
-            else if (reverse_control_flow.contains(byte) || byte == VM_Bytecode::opcodes.at("ldptr")) {
+            else if (reverse_control_flow.contains(byte)
+                || byte == VM_Bytecode::opcodes.at("ldptr")
+                || byte == VM_Bytecode::opcodes.at("drptr")
+            ) {
                 constexpr size_t arg_size = sizeof(uint64_t);
                 current_vop.args.reserve(arg_size);
 

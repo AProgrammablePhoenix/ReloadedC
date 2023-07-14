@@ -5,17 +5,6 @@
 #include "engine/context.hpp"
 #include "vlibc/internal_vlibc.hpp"
 
-// TODO:
-// Implement data section in relexe
-// Implement ptr, deref_ptr, load_ptr:
-//// ptr: make ptr out of virtual variable
-//// deref_ptr: get the value from a pointer
-//// load_ptr: get the pointer to a variable in the data section
-//// easy to implement strings:
-////// store const char* 's into the data section,
-////// get the pointer to it with load_ptr
-////// use it as you usually would (pass the pointer to a function, dereference it, index it (offset + dereference)...)
-
 // operation on files
 // int remove(const char* filename)
 void vremove(execution_context& ectx) {

@@ -12,7 +12,7 @@ namespace VM_Bytecode {
 
     namespace Assembling {
         const std::unordered_set<std::string> one_operand_ops = {
-            "load_c", "load_v", "ldptr", "store", "call"
+            "load_c", "load_v", "ldptr", "mkptr", "drptr", "store", "call"
         };
         const std::unordered_set<std::string> two_operand_ops = {
             "natcall"
@@ -45,7 +45,7 @@ namespace VM_Bytecode {
 
         { "load_c", 0x12 }, // load constant
         { "load_v", 0x13 }, // load variable
-        { "ldptr", 0x14 }, // load data pointer
+        { "ldptr", 0x14 }, // load data pointer (from static storage, aka, data section)
         { "store", 0x15 }, // store value
 
         { "call", 0x16 }, // call user defined procedure
@@ -71,6 +71,9 @@ namespace VM_Bytecode {
         { "secw", 0x28 }, // sign extended convert to word
         { "secd", 0x29 }, // sign extended convert to dword
         { "secq", 0x2A }, // sign extended convert to qword
+
+        { "mkptr", 0x2B }, // get memory address of local variable (makes a pointer)
+        { "drptr", 0x2C } // dereference pointer, get data stored at given memory address
     };
 
     const std::unordered_set<std::string> size_prefixed_ops = {

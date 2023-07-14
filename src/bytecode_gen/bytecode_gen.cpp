@@ -174,7 +174,7 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
                     this->bytecode.insert(this->bytecode.end(), raw32.raw, raw32.raw + sizeof(uint32_t));
                 }
             }
-            else if (op == "load_v" || op == "store") {
+            else if (op == "load_v" || op == "mkptr" || op == "store") {
                 uint16_t n = (uint16_t)std::stoul(arg.data());
                 raw_bytes raw16 = get_raw_bytes<uint16_t>(n);
                 this->bytecode.insert(this->bytecode.end(), raw16.raw, raw16.raw + sizeof(uint16_t));
@@ -183,6 +183,11 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
                 uint64_t idx = (uint64_t)std::stoull(arg.data());
                 uint64_t real_idx = data_index_map.at(idx);
                 raw_bytes raw64 = get_raw_bytes<uint64_t>(real_idx);
+                this->bytecode.insert(this->bytecode.end(), raw64.raw, raw64.raw + sizeof(uint64_t));
+            }
+            else if (op == "drptr") {
+                uint64_t n = (uint64_t)std::stoull(arg.data());
+                raw_bytes raw64 = get_raw_bytes<uint64_t>(n);
                 this->bytecode.insert(this->bytecode.end(), raw64.raw, raw64.raw + sizeof(uint64_t));
             }
             else if (Assembling::control_flow.contains(op)) {

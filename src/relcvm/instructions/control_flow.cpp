@@ -12,7 +12,7 @@
 namespace {
     void vcall_core(call_context& ctx) {
         ctx.saved_locals.emplace_back(ctx.ip, ctx.ectx.get_local_variables());
-        ctx.ectx.get_local_variables().storage->fill(0);
+        ctx.ectx.get_local_variables().storage = std::make_shared<std::array<uint8_t,0xFFFF>>();
         uint64_t addr = *(uint64_t*)ctx.args.data();
         ctx.ip = ctx.ectx.index_mapping.at(addr + 1) - 1;
     }

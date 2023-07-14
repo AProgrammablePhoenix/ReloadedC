@@ -120,10 +120,23 @@ void Visitor::visit(IdentifierNode* node) {
     }
 }
 void Visitor::visit(DereferenceNode* node) {
-    // not yet implemented
+    ExpNode* exp = node->getExp();
+    const auto& prefix_size = get_op_size_prefix(exp->getRetType());
+
+    if (exp->getExpType() != "op") {
+        const char* bin_op = exp->isConst() ? "load_c " : "load_v " ;
+        output_file << "[[BITS" << prefix_size << "]] " << bin_op; exp->accept(*this);
+    }
+    else {
+        exp->accept(*this);
+    }
+
+    size_t dereference_size = compute_type_size(node->getRetType());
+    output_file << "drptr " << dereference_size << "\n";
 }
 void Visitor::visit(AddressofNode* node) {
-    // not yet implemented
+    output_file << "mkptr ";
+    node->getExp()->accept(*this);
 }
 void Visitor::visit(IntegerNode* node) {
     output_file << node->getValue() << "\n";
@@ -164,7 +177,7 @@ void Visitor::visit(ConversionNode* node) {
     const auto& prefix_size = get_op_size_prefix(exp->getRetType());
 
     if (exp->getExpType() != "op") {
-        const char* bin_op = exp->isConst() ? "load_c " : "load_v" ;
+        const char* bin_op = exp->isConst() ? "load_c " : "load_v " ;
         output_file << "[[BITS" << prefix_size << "]] " << bin_op; exp->accept(*this);
     }
     else {

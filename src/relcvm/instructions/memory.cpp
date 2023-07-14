@@ -97,9 +97,32 @@ namespace {
         std::vector<uint8_t> raw_ptr((uint8_t*)&data_ptr, (uint8_t*)&data_ptr + sizeof(data_ptr));
         ectx.get_operands_stack().push(raw_ptr);
     }
+    void vmkptr_handler(call_context& ctx) {
+        uint16_t local_addr = *(uint16_t*)ctx.args.data();
+        execution_context& ectx = ctx.ectx;
+
+        uint8_t* ptr = ectx.get_local_variables().storage->data() + local_addr;
+
+        std::vector<uint8_t> raw_ptr((uint8_t*)&ptr, (uint8_t*)&ptr + sizeof(ptr));
+        ectx.get_operands_stack().push(raw_ptr);
+    }
+    void vdrptr_handler(call_context& ctx) {
+        uint64_t size = *(uint64_t*)ctx.args.data();
+        execution_context& ectx = ctx.ectx;
+        auto& stack = ectx.get_operands_stack();
+
+        std::vector<uint8_t> raw_ptr = stack.pop(sizeof(void*));
+        std::reverse(raw_ptr.begin(), raw_ptr.end());
+        uint8_t* ptr = *(uint8_t**)raw_ptr.data();
+
+        std::vector<uint8_t> data(ptr, ptr + size);
+        stack.push(data);
+    }
 }
 
 auto vload_c = vload_c_handler;
 auto vload_v = vmem<vload_v_impl>;
 auto vldptr = vldptr_handler;
+auto vmkptr = vmkptr_handler;
+auto vdrptr = vdrptr_handler;
 auto vstore = vmem<vstore_impl>;
