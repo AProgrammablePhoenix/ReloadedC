@@ -63,6 +63,21 @@ std::shared_ptr<ExpNode> gvisitor::visitNative_call(relcgrammarParser::Native_ca
 
     if (ctx->arguments_list()) {
         args_list = visitArguments_list(ctx->arguments_list());
+
+        for (size_t i = 0; i < args_list.size(); ++i) {
+            const _typeinfo_t& _arg_t = args_list[i]->getRetType();
+            const _typeinfo_t& _param_t = native_prototypes.at(nfsym_name).second.getParamsList()[i]._tinfo;
+
+            if (!is_implicit_convertible(_arg_t, _param_t)) {
+                report_err(
+                    "wrong type of argument was provided (arg " + std::to_string(i + 1) + ") when calling function: " + nfsym_name,
+                    nfsym_line
+                );
+            }
+            else if (_arg_t._type != _param_t._type) {
+                args_list[i] = std::make_shared<ConversionNode>(args_list[i]->getline(), args_list[i], _param_t);
+            }
+        }
     }
 
     return std::make_shared<NativeFunctionCall>(nfsym_line, nfsym_name, nflib, args_list, ret_type);

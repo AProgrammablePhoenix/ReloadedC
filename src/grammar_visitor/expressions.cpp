@@ -175,6 +175,8 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
         return std::make_shared<DereferenceNode>(exp_ctx->getStart()->getLine(), std::move(exp), *exp->getRetType().ptrderef_tinfo);
     }
     else if (ctx->exp().size() == 2) {
+        static const std::unordered_set<char> op_tokens{ '+', '-', '*', '/' };
+
         auto* left_exp_ctx  = ctx->exp(0);
         auto* right_exp_ctx = ctx->exp(1);
 
@@ -188,23 +190,54 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
 
         _implicit_conversion_t _conv_info;
 
-        if (!is_implicit_convertible(t1, t2, false) || !is_valid_arithmetic(t1, t2)) {
+        char op;
+
+        if (ctx->PLUS()) {
+            op = '+';
+        }
+        else if (ctx->MINUS()) {
+            op = '-';
+        }
+        else if (ctx->MULT()) {
+            op = '*';
+        }
+        else if (ctx->DIV()) {
+            op = '/';
+        }
+
+        if (is_valid_arithmetic(t1, t2, op) && is_pointer_addition(t1, t2, op)) {
+            if (t1._isptr) {
+                _typeinfo_t ser_ptr_t = get_ptr_serialized_type(t1._isconst);
+                if (t2._type != ser_ptr_t._type) {
+                    right_exp = std::make_shared<ConversionNode>(line, std::move(right_exp), ser_ptr_t);
+                }
+                return std::make_shared<PointerAdditionNode>(line, left_exp, right_exp);
+            }
+            else {
+                _typeinfo_t ser_ptr_t = get_ptr_serialized_type(t2._isconst);
+                if (t1._type != ser_ptr_t._type) {
+                    left_exp = std::make_shared<ConversionNode>(line, std::move(left_exp), ser_ptr_t);
+                }
+                return std::make_shared<PointerAdditionNode>(line, right_exp, left_exp);
+            }
+        }
+        else if (!is_implicit_convertible(t1, t2, false) || !is_valid_arithmetic(t1, t2, op)) {
             std::string _operation = "(undefined operation)";
             size_t _line = (size_t)-1;
 
-            if (ctx->PLUS()) {
+            if (op == '+') {
                 _operation = "add";
                 _line = ctx->PLUS()->getSymbol()->getLine();
             }
-            else if (ctx->MINUS()) {
+            else if (op == '-') {
                 _operation = "subtract";
                 _line = ctx->MINUS()->getSymbol()->getLine();
             }
-            else if (ctx->MULT()) {
+            else if (op == '*') {
                 _operation = "multiply";
                 _line = ctx->MULT()->getSymbol()->getLine();
             }
-            else if (ctx->DIV()) {
+            else if (op == '/') {
                 _operation = "divide";
                 _line = ctx->DIV()->getSymbol()->getLine();
             }
@@ -229,17 +262,15 @@ std::shared_ptr<ExpNode> gvisitor::visitExp(relcgrammarParser::ExpContext *ctx) 
             }
         }
 
-        if (ctx->PLUS()) {
-            return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '+', left_exp->getRetType());
+        if (t1._isptr && t2._isptr && op == '-') {
+            //left_exp = std::make_shared<ConversionNode>(line, std::move(left_exp), _serlialized_ptr_t(t1._isconst));
+            //right_exp = std::make_shared<ConversionNode>(line, std::move(right_exp), _serlialized_ptr_t(t2._isconst));
+
+            return std::make_shared<PointerSubtractionNode>(line, std::move(left_exp), std::move(right_exp));
         }
-        else if (ctx->MINUS()) {
-            return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '-', left_exp->getRetType());
-        }
-        else if (ctx->MULT()) {
-            return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '*', left_exp->getRetType());
-        }
-        else if (ctx->DIV()) {
-            return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), '/', left_exp->getRetType());
+
+        if (op_tokens.contains(op)) {
+            return std::make_shared<MathNode>(line, std::move(left_exp), std::move(right_exp), op, left_exp->getRetType());
         }
     }
     else if (ctx->exp().size() == 1 && ctx->LPAREN() && ctx->RPAREN()) {

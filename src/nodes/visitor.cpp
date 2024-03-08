@@ -196,6 +196,76 @@ void Visitor::visit(ConversionNode* node) {
 
     output_file << "[[BITS" << prefix_size << "]] " << conv_op << "\n";
 }
+void Visitor::visit(PointerAdditionNode* node) {
+    ExpNode* const ptr = node->getPtr();
+    ExpNode* const offset = node->getOffset();
+
+    const std::string ptr_size = get_op_size_prefix(ptr->getRetType());
+    const std::string offset_size = get_op_size_prefix(offset->getRetType());
+    const size_t underlying_size = compute_type_size(*ptr->getRetType().ptrderef_tinfo);
+
+    if (ptr->getExpType() != "op") {
+        const char* const ptr_str = ptr->isConst() ? "load_c " : "load_v ";
+
+        output_file << "[[BITS" << ptr_size << "]]" << ptr_str;
+        ptr->accept(*this);
+    }
+    else {
+        ptr->accept(*this);
+    }
+
+    if (offset->getExpType() != "op") {
+        const char* const off_str = offset->isConst() ? "load_c " : "load_v ";
+
+        output_file << "[[BITS" << offset_size << "]]" << off_str;
+        offset->accept(*this);
+    }
+    else {
+        offset->accept(*this);
+    }
+
+    if (underlying_size > 1) {
+        output_file << "[[BITS" << offset_size << "]] ";
+        output_file << "load_c " << underlying_size << "\n";
+        output_file << "[[BITS" << offset_size << "]] mul\n";
+    }
+
+    output_file << "[[BITS" << ptr_size << "]] add\n";
+}
+void Visitor::visit(PointerSubtractionNode* node) {
+    ExpNode* const ptr_l = node->getPtrL();
+    ExpNode* const ptr_r = node->getPtrR();
+
+    // ptr_l and ptr_r are assumed to have the same type.
+    const std::string ptr_size = get_op_size_prefix(ptr_l->getRetType());
+    const size_t underlying_size = compute_type_size(*ptr_l->getRetType().ptrderef_tinfo);
+
+    if (ptr_l->getExpType() != "op") {
+        const char* const l_str = ptr_l->isConst() ? "load_c " : "load_v ";
+
+        output_file << "[[BITS" << ptr_size << "]] " << l_str;
+        ptr_l->accept(*this);
+    }
+    else {
+        ptr_l->accept(*this);
+    }
+
+    if (ptr_r->getExpType() != "op") {
+        const char* const r_str = ptr_r->isConst() ? "load_c " : "load_v ";
+
+        output_file << "[[BITS" << ptr_size << "]] " << r_str;
+        ptr_r->accept(*this);
+    }
+    else {
+        ptr_r->accept(*this);
+    }
+
+    output_file << "[[BITS" << ptr_size << "]] sub\n";
+    if (underlying_size > 1) {
+        output_file << "[[BITS" << ptr_size << "]] load_c " << underlying_size << "\n";
+        output_file << "[[BITS" << ptr_size << "]] div\n";
+    }
+}
 void Visitor::visit(MathNode* node) {
     if (node->getLeft()->getExpType() != "op" && node->getRight()->getExpType() != "op") {
         const char* l_str = node->getLeft()->isConst() ? "load_c " : "load_v ";

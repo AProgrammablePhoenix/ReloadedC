@@ -30,6 +30,34 @@ private:
     std::shared_ptr<ExpNode> exp_in;
 };
 
+class PointerAdditionNode : public ExpNode {
+public:
+    PointerAdditionNode(int line, std::shared_ptr<ExpNode> ptr, std::shared_ptr<ExpNode> offset);
+    constexpr bool isConst() const;
+    void accept(class Visitor& v);
+    ExpNode* getPtr();
+    ExpNode* getOffset();
+
+    void delete_mem();
+private:
+    std::shared_ptr<ExpNode> ptr;
+    std::shared_ptr<ExpNode> offset;
+};
+
+class PointerSubtractionNode : public ExpNode {
+public:
+    PointerSubtractionNode(int line, std::shared_ptr<ExpNode> ptr_l, std::shared_ptr<ExpNode> ptr_r);
+    constexpr bool isConst() const;
+    void accept(class Visitor& v);
+    ExpNode* getPtrL();
+    ExpNode* getPtrR();
+
+    void delete_mem();
+private:
+    std::shared_ptr<ExpNode> ptr_l;
+    std::shared_ptr<ExpNode> ptr_r;
+};
+
 class MathNode: public ExpNode {
 public:
     MathNode(int line, std::shared_ptr<ExpNode> left, std::shared_ptr<ExpNode> right, char op, const _typeinfo_t& ret_type);

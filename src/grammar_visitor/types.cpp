@@ -17,7 +17,7 @@ namespace {
     static const std::unordered_set<std::string> float_types = { "float", "double", "long double" };
     
     static bool is_integer(const _typeinfo_t& t) {
-        return primitive_types.contains(t._type) && !t._isfloat;
+        return primitive_types.contains(t._type) && !t._isfloat && !t._isptr;
     }
 
     static bool are_pointers_compatible(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
@@ -35,6 +35,19 @@ namespace {
         }
 
         return t_in._ptrlvl < 2 ? true : are_pointers_compatible(*t_in.ptrderef_tinfo, *t_out.ptrderef_tinfo);
+    }
+    static bool are_pointers_arithmetic(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
+        if (!t_in._isptr || !t_out._isptr) {
+            return false;
+        }
+        else if (t_in._ptrlvl != t_out._ptrlvl) {
+            return false;
+        }
+        else if (t_in._type != t_out._type || t_in._isvoidptr != t_out._isvoidptr) {
+            return false;
+        }
+
+        return t_in._ptrlvl < 2 ? true : are_pointers_arithmetic(*t_in.ptrderef_tinfo, *t_out.ptrderef_tinfo);
     }
     static bool are_types_equal(const _typeinfo_t& t_in, const _typeinfo_t& t_out) {
         if (t_in._type != t_out._type) {
@@ -59,6 +72,9 @@ namespace {
         }
 
         return true;
+    }
+    static bool is_type_arithmetic(const _typeinfo_t& _tinfo) {
+        return !_tinfo._isptr && primitive_types.contains(_tinfo._type);
     }
 
     static _typeinfo_t visitPlainType(relcgrammarParser::Plain_typeContext* ctx) {
@@ -118,9 +134,6 @@ _typeinfo_t gvisitor::visitType(relcgrammarParser::TypeContext* ctx) {
     return visitPlainType(ctx->plain_type());
 }
 
-// TODO:
-// adapt all implicit conversions with pointer arithmetic
-
 bool is_implicit_convertible(const _typeinfo_t& t_in, const _typeinfo_t& t_out, bool in_out) {
     if (are_types_equal(t_in, t_out)) {
         return true;
@@ -142,15 +155,63 @@ bool is_implicit_convertible(const _typeinfo_t& t_in, const _typeinfo_t& t_out, 
 
     return true;
 }
-bool is_valid_arithmetic(const _typeinfo_t& t1, const _typeinfo_t& t2) {
-    if (t1._isptr && t2._isptr) {
-        return false;
+bool is_valid_arithmetic(const _typeinfo_t& t1, const _typeinfo_t& t2, char op) {
+    if (is_type_arithmetic(t1) && is_type_arithmetic(t2)) {
+        return true;
     }
-    else if ((t1._isptr && !is_integer(t2)) || (t2._isptr && !is_integer(t1))) {
-        return false;
+    else if (t1._isptr && is_integer(t2)) {
+        if (op == '+' || op == '-') {
+            return true;
+        }
     }
-    
-    return true;
+    else if (t2._isptr && is_integer(t1)) {
+        if (op == '+') {
+            return true;
+        }
+    }
+    else if (t1._isptr && t2._isptr) {
+        if (op == '-') {
+            return are_pointers_arithmetic(t1, t2);
+        }
+    }
+
+    return false;
+}
+bool is_pointer_addition(const _typeinfo_t& t1, const _typeinfo_t& t2, char op) {
+    if (op == '+') {
+        if ((t1._isptr && is_integer(t2)) || (is_integer(t1) && t2._isptr)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+_typeinfo_t get_ptr_serialized_type(bool constness) {
+    _typeinfo_t base = _typeinfo_t{
+        ._isconst = constness,
+        ._issigned = false
+    };
+
+    switch (sizeof(void*)) {
+        case 1 : {
+            base._type = "char";
+            break;
+        }
+        case 4 : {
+            base._type = "int";
+            break;
+        }
+        case 8 : {
+            base._type = "long";
+            break;
+        }
+        default : {
+            base._type = "int";
+            break;
+        }
+    }
+
+    return base;
 }
 
 _internal_conversion_t get_assignment_implicit_conversion(const _typeinfo_t& _t_in, const _typeinfo_t& _t_out) {

@@ -22,6 +22,37 @@ struct _typeinfo_t {
     int _ptrlvl = 0;
 };
 
+struct _serlialized_ptr_t final : public _typeinfo_t {
+    _serlialized_ptr_t(bool constness) {
+        switch (sizeof(void*)) {
+            case 1 : {
+                _type = "char";
+                break;
+            }
+            case 4 : {
+                _type = "int";
+                break;
+            }
+            case 8 : {
+                _type = "long";
+                break;
+            }
+            default : {
+                _type = "int";
+                break;
+            }
+        }
+
+        _isconst = constness;
+        _issigned = false;
+        _isfloat = false;
+        _isptr = false;
+        ptrderef_tinfo = nullptr;
+        _isvoidptr = false;
+        _ptrlvl = 0;
+    }
+};
+
 struct _variable_def_t {
     std::string _name;
     _typeinfo_t _tinfo;

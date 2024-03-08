@@ -31,6 +31,49 @@ void ConversionNode::delete_mem() {
     this->exp_in->delete_mem();
 }
 
+PointerAdditionNode::PointerAdditionNode(int line, std::shared_ptr<ExpNode> ptr, std::shared_ptr<ExpNode> offset) : ExpNode(line, "op", ptr->getRetType()) {
+    this->ptr = std::move(ptr);
+    this->offset = std::move(offset);
+}
+constexpr bool PointerAdditionNode::isConst() const {
+    return false;
+}
+void PointerAdditionNode::accept(Visitor& v) {
+    v.visit(this);
+}
+ExpNode* PointerAdditionNode::getPtr() {
+    return this->ptr.get();
+}
+ExpNode* PointerAdditionNode::getOffset() {
+    return this->offset.get();
+}
+void PointerAdditionNode::delete_mem() {
+    this->ptr->delete_mem();
+    this->offset->delete_mem();
+}
+
+PointerSubtractionNode::PointerSubtractionNode(int line, std::shared_ptr<ExpNode> ptr_l, std::shared_ptr<ExpNode> ptr_r) :
+        ExpNode(line, "op", _serlialized_ptr_t(false)) {
+    this->ptr_l = std::move(ptr_l);
+    this->ptr_r = std::move(ptr_r);
+}
+constexpr bool PointerSubtractionNode::isConst() const {
+    return false;
+}
+void PointerSubtractionNode::accept(Visitor& v) {
+    v.visit(this);
+}
+ExpNode* PointerSubtractionNode::getPtrL() {
+    return this->ptr_l.get();
+}
+ExpNode* PointerSubtractionNode::getPtrR() {
+    return this->ptr_r.get();
+}
+void PointerSubtractionNode::delete_mem() {
+    this->ptr_l->delete_mem();
+    this->ptr_r->delete_mem();
+}
+
 MathNode::MathNode(int line, std::shared_ptr<ExpNode> left, std::shared_ptr<ExpNode>right, char op, const _typeinfo_t& ret_type) :
         ExpNode(line, "op", ret_type), op(op) {
     this->left = std::move(left);

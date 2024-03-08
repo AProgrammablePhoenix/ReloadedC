@@ -20,7 +20,9 @@
 #include "../symbols.hpp"
 
 bool is_implicit_convertible(const _typeinfo_t& t_in, const _typeinfo_t& t_out, bool in_out = true);
-bool is_valid_arithmetic(const _typeinfo_t& t1, const _typeinfo_t& t2);
+bool is_valid_arithmetic(const _typeinfo_t& t1, const _typeinfo_t& t2, char op);
+bool is_pointer_addition(const _typeinfo_t& t1, const _typeinfo_t& t2, char op);
+_typeinfo_t get_ptr_serialized_type(bool constness);
 _internal_conversion_t get_assignment_implicit_conversion(const _typeinfo_t& _t_in, const _typeinfo_t& _t_out);
 _implicit_conversion_t get_expression_implicit_conversion(const _typeinfo_t& _t_left, const _typeinfo_t& _t_right);
 
