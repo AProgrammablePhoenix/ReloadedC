@@ -1,3 +1,4 @@
+#include <any>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -92,8 +93,16 @@ void Visitor::visit(ProgramNode* node) {
 void Visitor::visit(StatementNode* node) {
     output_file << "\n// Statement\n";
     ExpNode* exp = node->getExp();
+
+    const auto dest_data = node->getDestData();
+    const auto dest_type = dest_data.getType();
+
+    const bool isLegacy = dest_type == AssignmentDestData::_type::LEGACY;
+    const std::string out_var = isLegacy ? std::any_cast<std::string>(dest_data.getDestData()) : "";
+    ExpNode* const out_exp = !isLegacy ? std::any_cast<std::shared_ptr<ExpNode>>(dest_data.getDestData()).get() : nullptr; 
+
     if (exp->getExpType().starts_with("imm_") || exp->getExpType() == "var") {
-        if (node->getOutVar() == "") {
+        if (isLegacy && out_var == "") {
             std::cerr << "Warning: orphan immediate found at line " << node->getline() << std::endl;
             return;
         }
@@ -102,12 +111,43 @@ void Visitor::visit(StatementNode* node) {
 
         output_file << "[[BITS" << bin_size << "]] " << "load_c ";
         exp->accept(*this);
-        output_file << "[[BITS" << bin_size << "]] " << "store " << vars_disp.at(node->getOutVar()) << "\n";
+        if (isLegacy) {
+            output_file << "[[BITS" << bin_size << "]] " << "store " << vars_disp.at(out_var) << "\n";
+        }
+        else {
+            if (out_exp->getExpType() != "op") {
+                const char* const out_exp_str = out_exp->isConst() ? "load_c " : "load_v ";
+
+                output_file << "[[BITS" << get_op_size_prefix(out_exp->getRetType()) << "]] " << out_exp_str;
+                out_exp->accept(*this);
+            }
+            else {
+                out_exp->accept(*this);
+            }
+            
+            output_file << "stptr " << compute_type_size(*out_exp->getRetType().ptrderef_tinfo) << "\n";
+        }
     }
     else {
         exp->accept(*this);
-        if (node->getOutVar() != "") {
-            output_file << "[[BITS" << get_op_size_prefix(exp->getRetType()) << "]] " << "store " << vars_disp.at(node->getOutVar()) << "\n";
+
+        if (isLegacy) {
+            if (out_var != "") {
+                output_file << "[[BITS" << get_op_size_prefix(exp->getRetType()) << "]] " << "store " << vars_disp.at(out_var) << "\n";
+            }
+        }
+        else {
+            if (out_exp->getExpType() != "op") {
+                const char* const out_exp_str = out_exp->isConst() ? "load_c " : "load_v ";
+
+                output_file << "[[BITS" << get_op_size_prefix(out_exp->getRetType()) << "]] " << out_exp_str;
+                out_exp->accept(*this);
+            }
+            else {
+                out_exp->accept(*this);
+            }
+
+            output_file << "stptr " << compute_type_size(*out_exp->getRetType().ptrderef_tinfo) << "\n";
         }
     }
 }
@@ -207,7 +247,7 @@ void Visitor::visit(PointerAdditionNode* node) {
     if (ptr->getExpType() != "op") {
         const char* const ptr_str = ptr->isConst() ? "load_c " : "load_v ";
 
-        output_file << "[[BITS" << ptr_size << "]]" << ptr_str;
+        output_file << "[[BITS" << ptr_size << "]] " << ptr_str;
         ptr->accept(*this);
     }
     else {
@@ -217,7 +257,7 @@ void Visitor::visit(PointerAdditionNode* node) {
     if (offset->getExpType() != "op") {
         const char* const off_str = offset->isConst() ? "load_c " : "load_v ";
 
-        output_file << "[[BITS" << offset_size << "]]" << off_str;
+        output_file << "[[BITS" << offset_size << "]] " << off_str;
         offset->accept(*this);
     }
     else {

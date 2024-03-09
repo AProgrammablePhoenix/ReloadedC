@@ -118,6 +118,22 @@ namespace {
         std::vector<uint8_t> data(ptr, ptr + size);
         stack.push(data);
     }
+    void vstptr_handler(call_context& ctx) {
+        uint64_t size = *(uint64_t*)ctx.args.data();
+        execution_context& ectx = ctx.ectx;
+        auto& stack = ectx.get_operands_stack();
+
+        std::vector<uint8_t> raw_ptr = stack.pop(sizeof(void*));
+        std::vector<uint8_t> raw_v = stack.pop(size);
+
+        std::reverse(raw_ptr.begin(), raw_ptr.end());
+        std::reverse(raw_v.begin(), raw_v.end());
+
+        uint8_t* ptr = *(uint8_t**)raw_ptr.data();
+        for (size_t i = 0; i < size; ++i) {
+            ptr[i] = raw_v[i];
+        }
+    }
 }
 
 auto vload_c = vload_c_handler;
@@ -125,4 +141,5 @@ auto vload_v = vmem<vload_v_impl>;
 auto vldptr = vldptr_handler;
 auto vmkptr = vmkptr_handler;
 auto vdrptr = vdrptr_handler;
+auto vstptr = vstptr_handler;
 auto vstore = vmem<vstore_impl>;

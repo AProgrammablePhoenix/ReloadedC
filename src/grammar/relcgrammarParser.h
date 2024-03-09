@@ -157,11 +157,15 @@ public:
 
   class  AssignmentContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *ptrderef = nullptr;
+    relcgrammarParser::ExpContext *assignExp = nullptr;
     AssignmentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *EQUAL();
-    ExpContext *exp();
+    std::vector<ExpContext *> exp();
+    ExpContext* exp(size_t i);
+    antlr4::tree::TerminalNode *MULT();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

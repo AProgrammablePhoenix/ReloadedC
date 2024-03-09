@@ -1,3 +1,4 @@
+#include <any>
 #include <string>
 
 #include "node.hpp"
@@ -203,27 +204,51 @@ void NativeFunctionCall::delete_mem() {
     }
 }
 
-StatementNode::StatementNode(StatementNode&& _stmt) : Node(_stmt.getline()) {
+AssignmentDestData::AssignmentDestData(const std::string& out_var) {
+    this->out_var = out_var;
+    this->underlying_type = _type::LEGACY;
+}
+AssignmentDestData::AssignmentDestData(std::shared_ptr<ExpNode> out_exp) {
+    this->out_exp = std::move(out_exp);
+    this->underlying_type = _type::DEREFERENCE;
+}
+AssignmentDestData::_type AssignmentDestData::getType() const {
+    return this->underlying_type;
+}
+std::any AssignmentDestData::getDestData() const {
+    if (this->underlying_type == _type::LEGACY) {
+        return std::any(this->out_var);
+    }
+    else {
+        return std::any(std::move(this->out_exp));
+    }
+}
+void AssignmentDestData::delete_mem() {
+    if (this->underlying_type == _type::DEREFERENCE) {
+        this->out_exp->delete_mem();
+    }
+}
+
+StatementNode::StatementNode(StatementNode&& _stmt) : Node(_stmt.getline()), dest_data(_stmt.dest_data) {
     exp = std::move(_stmt.exp);
-    out_var = _stmt.out_var;
 }
-StatementNode::StatementNode(const StatementNode& _stmt) : Node(_stmt.getline()) {
+StatementNode::StatementNode(const StatementNode& _stmt) : Node(_stmt.getline()), dest_data(_stmt.dest_data) {
     exp = _stmt.exp;
-    out_var = _stmt.out_var;
 }
-StatementNode::StatementNode(int line, std::shared_ptr<ExpNode> exp, const std::string& out_var) :
-        Node(line), out_var(out_var) {
+StatementNode::StatementNode(int line, std::shared_ptr<ExpNode> exp, const AssignmentDestData& dest_data) :
+        Node(line), dest_data(dest_data) {
     this->exp = std::move(exp);
 }
 ExpNode* StatementNode::getExp() {
     return this->exp.get();
 }
-const std::string& StatementNode::getOutVar() {
-    return this->out_var;
+const AssignmentDestData& StatementNode::getDestData() {
+    return this->dest_data;
 }
 void StatementNode::accept(Visitor& v) {
     v.visit(this);
 }
 void StatementNode::delete_mem() {
+    this->dest_data.delete_mem();
     this->exp->delete_mem();
 }

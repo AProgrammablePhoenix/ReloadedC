@@ -185,7 +185,7 @@ const std::vector<uint8_t>& bytecode_gen::generate() {
                 raw_bytes raw64 = get_raw_bytes<uint64_t>(real_idx);
                 this->bytecode.insert(this->bytecode.end(), raw64.raw, raw64.raw + sizeof(uint64_t));
             }
-            else if (op == "drptr") {
+            else if (op == "drptr" || op == "stptr") {
                 uint64_t n = (uint64_t)std::stoull(arg.data());
                 raw_bytes raw64 = get_raw_bytes<uint64_t>(n);
                 this->bytecode.insert(this->bytecode.end(), raw64.raw, raw64.raw + sizeof(uint64_t));

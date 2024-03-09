@@ -16,39 +16,66 @@ std::shared_ptr<StatementNode> gvisitor::visitStatement(relcgrammarParser::State
     
     if (ctx->assignment()) {
         auto stmt = visitAssignment(ctx->assignment());
-        return std::make_unique<StatementNode>(ctx->assignment()->getStart()->getLine(), stmt.second, stmt.first);
+        return std::make_unique<StatementNode>(
+            ctx->assignment()->getStart()->getLine(),
+            stmt.second,
+            AssignmentDestData(stmt.first)
+        );
     }
     else if (ctx->initialization()) {
         auto stmt = visitInitialization(ctx->initialization());
-        return std::make_unique<StatementNode>(ctx->initialization()->getStart()->getLine(), stmt.second, stmt.first);
+        return std::make_unique<StatementNode>(
+            ctx->initialization()->getStart()->getLine(),
+            stmt.second,
+            stmt.first
+        );
     }
     else if (ctx->exp()) {
         auto stmt = visitExp(ctx->exp());
-        return std::make_unique<StatementNode>(ctx->exp()->getStart()->getLine(), stmt, "");
+        return std::make_unique<StatementNode>(
+            ctx->exp()->getStart()->getLine(),
+            stmt,
+            AssignmentDestData("")
+        );
     }
 
     return nullptr;
 }
-std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitAssignment(relcgrammarParser::AssignmentContext* ctx) {
-    std::string vname = ctx->ID()->getText();
-    std::shared_ptr<ExpNode> exp = visitExp(ctx->exp());
+std::pair<AssignmentDestData, std::shared_ptr<ExpNode>> gvisitor::visitAssignment(relcgrammarParser::AssignmentContext* ctx) {
+    if (ctx->ID()) {
+        std::string vname = ctx->ID()->getText();
+        std::shared_ptr<ExpNode> exp = visitExp(ctx->exp()[0]);
 
-    size_t vname_line = ctx->ID()->getSymbol()->getLine();
-    const auto& vdata = fetch_var_data(vname, vname_line);
-    
-    if (!is_implicit_convertible(exp->getRetType(), vdata._tinfo)) {
-        report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType()._type, vdata._tinfo._type), vname_line);
-    }
-    else if (vdata._tinfo._type != exp->getRetType()._type) {
-        exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), vdata._tinfo);
-    }
-    else if (vdata._tinfo._isconst) {
-        report_err(fmt::format("assignment of read-only variable '{}'", vname), vname_line);
-    }
+        size_t vname_line = ctx->ID()->getSymbol()->getLine();
+        const auto& vdata = fetch_var_data(vname, vname_line);
+        
+        if (!is_implicit_convertible(exp->getRetType(), vdata._tinfo)) {
+            report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType()._type, vdata._tinfo._type), vname_line);
+        }
+        else if (vdata._tinfo._type != exp->getRetType()._type) {
+            exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), vdata._tinfo);
+        }
+        else if (vdata._tinfo._isconst) {
+            report_err(fmt::format("assignment of read-only variable '{}'", vname), vname_line);
+        }
 
-    return std::make_pair(vname, exp);
+        return std::make_pair(AssignmentDestData(vname), exp);
+    }
+    else {
+        auto raw_dest_exp = ctx->exp()[0];
+
+        if (!ctx->ptrderef) {
+            report_err(
+                "cannot assign a value to an rvalue expression: " + raw_dest_exp->getText(),
+                raw_dest_exp->getStart()->getLine()
+            );
+        }
+
+        std::shared_ptr<ExpNode> exp = visitExp(ctx->exp()[1]);
+        return std::make_pair(AssignmentDestData(visitExp(raw_dest_exp)), exp);
+    }
 }
-std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitInitialization(relcgrammarParser::InitializationContext *ctx) {
+std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitInitialization(relcgrammarParser::InitializationContext* ctx) {
     std::string vname = ctx->ID()->getText();
     _typeinfo_t vtype = visitType(ctx->type());
 

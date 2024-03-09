@@ -43,7 +43,7 @@ public:
     void visitGlobal_statement(relcgrammarParser::Global_statementContext *ctx);
 
     std::shared_ptr<StatementNode> visitStatement(relcgrammarParser::StatementContext* ctx);
-    std::pair<std::string, std::shared_ptr<ExpNode>> visitAssignment(relcgrammarParser::AssignmentContext* ctx);
+    std::pair<AssignmentDestData, std::shared_ptr<ExpNode>> visitAssignment(relcgrammarParser::AssignmentContext* ctx);
     std::pair<std::string, std::shared_ptr<ExpNode>> visitInitialization(relcgrammarParser::InitializationContext *ctx);
 
     _typeinfo_t visitType(relcgrammarParser::TypeContext* ctx);

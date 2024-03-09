@@ -101,6 +101,7 @@ namespace {
             else if (reverse_control_flow.contains(byte)
                 || byte == VM_Bytecode::opcodes.at("ldptr")
                 || byte == VM_Bytecode::opcodes.at("drptr")
+                || byte == VM_Bytecode::opcodes.at("stptr")
             ) {
                 constexpr size_t arg_size = sizeof(uint64_t);
                 current_vop.args.reserve(arg_size);

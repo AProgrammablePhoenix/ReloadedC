@@ -66,6 +66,7 @@ statement:
 	;
 assignment:
 	ID EQUAL exp
+	| ptrderef='*' assignExp=exp EQUAL exp
 	;
 initialization:
 	type ID EQUAL exp

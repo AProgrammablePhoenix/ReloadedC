@@ -1,5 +1,6 @@
 #pragma once
 
+#include <any>
 #include <memory>
 #include <string>
 #include <vector>
@@ -136,17 +137,37 @@ private:
     std::vector<std::shared_ptr<ExpNode>> parameters;
 };
 
+class AssignmentDestData {
+public:
+    enum class _type {
+        LEGACY,
+        DEREFERENCE
+    };
+
+    AssignmentDestData(const std::string& out_var);
+    AssignmentDestData(std::shared_ptr<ExpNode> out_exp);
+
+    _type getType() const;
+    std::any getDestData() const;
+
+    void delete_mem();
+private:
+    _type underlying_type;
+    std::string out_var;
+    std::shared_ptr<ExpNode> out_exp;
+};
+
 class StatementNode: public Node {
 public:
     StatementNode(StatementNode&& _stmt);
     StatementNode(const StatementNode& _stmt);
-    StatementNode(int line, std::shared_ptr<ExpNode> exp, const std::string& out_var);
+    StatementNode(int line, std::shared_ptr<ExpNode> exp, const AssignmentDestData& dest_data);
     ExpNode* getExp();
-    const std::string& getOutVar();
+    const AssignmentDestData& getDestData();
     void accept(class Visitor& v);
 
     void delete_mem();
 private:
     std::shared_ptr<ExpNode> exp;
-    std::string out_var;
+    AssignmentDestData dest_data;
 };

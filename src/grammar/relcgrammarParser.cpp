@@ -71,74 +71,76 @@ void relcgrammarParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,23,214,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,23,220,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,1,0,1,0,1,0,1,0,
   	1,0,3,0,46,8,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,56,8,1,1,1,1,1,1,1,
   	1,1,1,1,5,1,63,8,1,10,1,12,1,66,9,1,1,2,1,2,3,2,70,8,2,1,3,4,3,73,8,3,
   	11,3,12,3,74,1,4,1,4,1,4,3,4,80,8,4,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,
-  	5,1,5,1,5,1,5,3,5,94,8,5,1,6,1,6,1,6,1,6,1,7,1,7,1,7,1,7,1,7,1,8,1,8,
-  	1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,
-  	8,1,8,1,8,1,8,1,8,3,8,129,8,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,
-  	1,8,1,8,5,8,143,8,8,10,8,12,8,146,9,8,1,9,1,9,1,9,1,9,3,9,152,8,9,1,9,
-  	1,9,1,10,1,10,1,10,5,10,159,8,10,10,10,12,10,162,9,10,1,11,1,11,1,11,
-  	1,12,1,12,1,12,5,12,170,8,12,10,12,12,12,173,9,12,1,13,1,13,1,13,1,13,
-  	1,13,1,13,1,14,1,14,1,14,1,15,1,15,1,15,1,15,1,15,1,15,1,15,1,15,1,15,
-  	1,15,1,15,3,15,195,8,15,1,16,4,16,198,8,16,11,16,12,16,199,1,17,1,17,
-  	1,17,1,17,1,18,1,18,1,18,3,18,209,8,18,1,19,1,19,1,19,1,19,0,2,2,16,20,
-  	0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,0,0,228,0,45,1,
-  	0,0,0,2,55,1,0,0,0,4,69,1,0,0,0,6,72,1,0,0,0,8,79,1,0,0,0,10,93,1,0,0,
-  	0,12,95,1,0,0,0,14,99,1,0,0,0,16,128,1,0,0,0,18,147,1,0,0,0,20,155,1,
-  	0,0,0,22,163,1,0,0,0,24,166,1,0,0,0,26,174,1,0,0,0,28,180,1,0,0,0,30,
-  	194,1,0,0,0,32,197,1,0,0,0,34,201,1,0,0,0,36,208,1,0,0,0,38,210,1,0,0,
-  	0,40,41,5,6,0,0,41,46,5,5,0,0,42,43,5,5,0,0,43,46,5,6,0,0,44,46,5,5,0,
-  	0,45,40,1,0,0,0,45,42,1,0,0,0,45,44,1,0,0,0,46,1,1,0,0,0,47,48,6,1,-1,
-  	0,48,49,3,0,0,0,49,50,5,13,0,0,50,51,5,6,0,0,51,56,1,0,0,0,52,53,3,0,
-  	0,0,53,54,5,13,0,0,54,56,1,0,0,0,55,47,1,0,0,0,55,52,1,0,0,0,56,64,1,
-  	0,0,0,57,58,10,4,0,0,58,59,5,13,0,0,59,63,5,6,0,0,60,61,10,3,0,0,61,63,
-  	5,13,0,0,62,57,1,0,0,0,62,60,1,0,0,0,63,66,1,0,0,0,64,62,1,0,0,0,64,65,
-  	1,0,0,0,65,3,1,0,0,0,66,64,1,0,0,0,67,70,3,2,1,0,68,70,3,0,0,0,69,67,
-  	1,0,0,0,69,68,1,0,0,0,70,5,1,0,0,0,71,73,3,8,4,0,72,71,1,0,0,0,73,74,
-  	1,0,0,0,74,72,1,0,0,0,74,75,1,0,0,0,75,7,1,0,0,0,76,80,3,26,13,0,77,80,
-  	3,28,14,0,78,80,3,38,19,0,79,76,1,0,0,0,79,77,1,0,0,0,79,78,1,0,0,0,80,
-  	9,1,0,0,0,81,82,3,12,6,0,82,83,5,16,0,0,83,94,1,0,0,0,84,85,3,14,7,0,
-  	85,86,5,16,0,0,86,94,1,0,0,0,87,88,3,16,8,0,88,89,5,16,0,0,89,94,1,0,
-  	0,0,90,94,3,12,6,0,91,94,3,14,7,0,92,94,3,16,8,0,93,81,1,0,0,0,93,84,
-  	1,0,0,0,93,87,1,0,0,0,93,90,1,0,0,0,93,91,1,0,0,0,93,92,1,0,0,0,94,11,
-  	1,0,0,0,95,96,5,8,0,0,96,97,5,15,0,0,97,98,3,16,8,0,98,13,1,0,0,0,99,
-  	100,3,4,2,0,100,101,5,8,0,0,101,102,5,15,0,0,102,103,3,16,8,0,103,15,
-  	1,0,0,0,104,105,6,8,-1,0,105,106,5,18,0,0,106,107,3,16,8,0,107,108,5,
-  	19,0,0,108,129,1,0,0,0,109,110,5,13,0,0,110,129,3,16,8,11,111,112,5,1,
-  	0,0,112,129,5,8,0,0,113,129,3,18,9,0,114,115,5,8,0,0,115,116,5,18,0,0,
-  	116,117,3,20,10,0,117,118,5,19,0,0,118,129,1,0,0,0,119,120,5,8,0,0,120,
-  	121,5,18,0,0,121,129,5,19,0,0,122,129,5,8,0,0,123,129,5,2,0,0,124,129,
-  	5,3,0,0,125,129,5,4,0,0,126,129,5,9,0,0,127,129,5,10,0,0,128,104,1,0,
-  	0,0,128,109,1,0,0,0,128,111,1,0,0,0,128,113,1,0,0,0,128,114,1,0,0,0,128,
-  	119,1,0,0,0,128,122,1,0,0,0,128,123,1,0,0,0,128,124,1,0,0,0,128,125,1,
-  	0,0,0,128,126,1,0,0,0,128,127,1,0,0,0,129,144,1,0,0,0,130,131,10,15,0,
-  	0,131,132,5,13,0,0,132,143,3,16,8,16,133,134,10,14,0,0,134,135,5,14,0,
-  	0,135,143,3,16,8,15,136,137,10,13,0,0,137,138,5,11,0,0,138,143,3,16,8,
-  	14,139,140,10,12,0,0,140,141,5,12,0,0,141,143,3,16,8,13,142,130,1,0,0,
-  	0,142,133,1,0,0,0,142,136,1,0,0,0,142,139,1,0,0,0,143,146,1,0,0,0,144,
-  	142,1,0,0,0,144,145,1,0,0,0,145,17,1,0,0,0,146,144,1,0,0,0,147,148,5,
-  	22,0,0,148,149,5,8,0,0,149,151,5,18,0,0,150,152,3,20,10,0,151,150,1,0,
-  	0,0,151,152,1,0,0,0,152,153,1,0,0,0,153,154,5,19,0,0,154,19,1,0,0,0,155,
-  	160,3,16,8,0,156,157,5,17,0,0,157,159,3,16,8,0,158,156,1,0,0,0,159,162,
-  	1,0,0,0,160,158,1,0,0,0,160,161,1,0,0,0,161,21,1,0,0,0,162,160,1,0,0,
-  	0,163,164,3,4,2,0,164,165,5,8,0,0,165,23,1,0,0,0,166,171,3,22,11,0,167,
-  	168,5,17,0,0,168,170,3,22,11,0,169,167,1,0,0,0,170,173,1,0,0,0,171,169,
-  	1,0,0,0,171,172,1,0,0,0,172,25,1,0,0,0,173,171,1,0,0,0,174,175,5,7,0,
-  	0,175,176,5,18,0,0,176,177,5,8,0,0,177,178,5,19,0,0,178,179,3,28,14,0,
-  	179,27,1,0,0,0,180,181,3,30,15,0,181,182,5,16,0,0,182,29,1,0,0,0,183,
-  	184,3,4,2,0,184,185,5,8,0,0,185,186,5,18,0,0,186,187,3,24,12,0,187,188,
-  	5,19,0,0,188,195,1,0,0,0,189,190,3,4,2,0,190,191,5,8,0,0,191,192,5,18,
-  	0,0,192,193,5,19,0,0,193,195,1,0,0,0,194,183,1,0,0,0,194,189,1,0,0,0,
-  	195,31,1,0,0,0,196,198,3,10,5,0,197,196,1,0,0,0,198,199,1,0,0,0,199,197,
-  	1,0,0,0,199,200,1,0,0,0,200,33,1,0,0,0,201,202,5,20,0,0,202,203,3,32,
-  	16,0,203,204,5,21,0,0,204,35,1,0,0,0,205,209,3,34,17,0,206,207,5,20,0,
-  	0,207,209,5,21,0,0,208,205,1,0,0,0,208,206,1,0,0,0,209,37,1,0,0,0,210,
-  	211,3,30,15,0,211,212,3,36,18,0,212,39,1,0,0,0,17,45,55,62,64,69,74,79,
-  	93,128,142,144,151,160,171,194,199,208
+  	5,1,5,1,5,1,5,3,5,94,8,5,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,3,6,104,8,6,
+  	1,7,1,7,1,7,1,7,1,7,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,
+  	8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,3,8,135,8,8,1,8,1,8,1,8,
+  	1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,5,8,149,8,8,10,8,12,8,152,9,8,1,9,
+  	1,9,1,9,1,9,3,9,158,8,9,1,9,1,9,1,10,1,10,1,10,5,10,165,8,10,10,10,12,
+  	10,168,9,10,1,11,1,11,1,11,1,12,1,12,1,12,5,12,176,8,12,10,12,12,12,179,
+  	9,12,1,13,1,13,1,13,1,13,1,13,1,13,1,14,1,14,1,14,1,15,1,15,1,15,1,15,
+  	1,15,1,15,1,15,1,15,1,15,1,15,1,15,3,15,201,8,15,1,16,4,16,204,8,16,11,
+  	16,12,16,205,1,17,1,17,1,17,1,17,1,18,1,18,1,18,3,18,215,8,18,1,19,1,
+  	19,1,19,1,19,0,2,2,16,20,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,
+  	34,36,38,0,0,235,0,45,1,0,0,0,2,55,1,0,0,0,4,69,1,0,0,0,6,72,1,0,0,0,
+  	8,79,1,0,0,0,10,93,1,0,0,0,12,103,1,0,0,0,14,105,1,0,0,0,16,134,1,0,0,
+  	0,18,153,1,0,0,0,20,161,1,0,0,0,22,169,1,0,0,0,24,172,1,0,0,0,26,180,
+  	1,0,0,0,28,186,1,0,0,0,30,200,1,0,0,0,32,203,1,0,0,0,34,207,1,0,0,0,36,
+  	214,1,0,0,0,38,216,1,0,0,0,40,41,5,6,0,0,41,46,5,5,0,0,42,43,5,5,0,0,
+  	43,46,5,6,0,0,44,46,5,5,0,0,45,40,1,0,0,0,45,42,1,0,0,0,45,44,1,0,0,0,
+  	46,1,1,0,0,0,47,48,6,1,-1,0,48,49,3,0,0,0,49,50,5,13,0,0,50,51,5,6,0,
+  	0,51,56,1,0,0,0,52,53,3,0,0,0,53,54,5,13,0,0,54,56,1,0,0,0,55,47,1,0,
+  	0,0,55,52,1,0,0,0,56,64,1,0,0,0,57,58,10,4,0,0,58,59,5,13,0,0,59,63,5,
+  	6,0,0,60,61,10,3,0,0,61,63,5,13,0,0,62,57,1,0,0,0,62,60,1,0,0,0,63,66,
+  	1,0,0,0,64,62,1,0,0,0,64,65,1,0,0,0,65,3,1,0,0,0,66,64,1,0,0,0,67,70,
+  	3,2,1,0,68,70,3,0,0,0,69,67,1,0,0,0,69,68,1,0,0,0,70,5,1,0,0,0,71,73,
+  	3,8,4,0,72,71,1,0,0,0,73,74,1,0,0,0,74,72,1,0,0,0,74,75,1,0,0,0,75,7,
+  	1,0,0,0,76,80,3,26,13,0,77,80,3,28,14,0,78,80,3,38,19,0,79,76,1,0,0,0,
+  	79,77,1,0,0,0,79,78,1,0,0,0,80,9,1,0,0,0,81,82,3,12,6,0,82,83,5,16,0,
+  	0,83,94,1,0,0,0,84,85,3,14,7,0,85,86,5,16,0,0,86,94,1,0,0,0,87,88,3,16,
+  	8,0,88,89,5,16,0,0,89,94,1,0,0,0,90,94,3,12,6,0,91,94,3,14,7,0,92,94,
+  	3,16,8,0,93,81,1,0,0,0,93,84,1,0,0,0,93,87,1,0,0,0,93,90,1,0,0,0,93,91,
+  	1,0,0,0,93,92,1,0,0,0,94,11,1,0,0,0,95,96,5,8,0,0,96,97,5,15,0,0,97,104,
+  	3,16,8,0,98,99,5,13,0,0,99,100,3,16,8,0,100,101,5,15,0,0,101,102,3,16,
+  	8,0,102,104,1,0,0,0,103,95,1,0,0,0,103,98,1,0,0,0,104,13,1,0,0,0,105,
+  	106,3,4,2,0,106,107,5,8,0,0,107,108,5,15,0,0,108,109,3,16,8,0,109,15,
+  	1,0,0,0,110,111,6,8,-1,0,111,112,5,18,0,0,112,113,3,16,8,0,113,114,5,
+  	19,0,0,114,135,1,0,0,0,115,116,5,13,0,0,116,135,3,16,8,11,117,118,5,1,
+  	0,0,118,135,5,8,0,0,119,135,3,18,9,0,120,121,5,8,0,0,121,122,5,18,0,0,
+  	122,123,3,20,10,0,123,124,5,19,0,0,124,135,1,0,0,0,125,126,5,8,0,0,126,
+  	127,5,18,0,0,127,135,5,19,0,0,128,135,5,8,0,0,129,135,5,2,0,0,130,135,
+  	5,3,0,0,131,135,5,4,0,0,132,135,5,9,0,0,133,135,5,10,0,0,134,110,1,0,
+  	0,0,134,115,1,0,0,0,134,117,1,0,0,0,134,119,1,0,0,0,134,120,1,0,0,0,134,
+  	125,1,0,0,0,134,128,1,0,0,0,134,129,1,0,0,0,134,130,1,0,0,0,134,131,1,
+  	0,0,0,134,132,1,0,0,0,134,133,1,0,0,0,135,150,1,0,0,0,136,137,10,15,0,
+  	0,137,138,5,13,0,0,138,149,3,16,8,16,139,140,10,14,0,0,140,141,5,14,0,
+  	0,141,149,3,16,8,15,142,143,10,13,0,0,143,144,5,11,0,0,144,149,3,16,8,
+  	14,145,146,10,12,0,0,146,147,5,12,0,0,147,149,3,16,8,13,148,136,1,0,0,
+  	0,148,139,1,0,0,0,148,142,1,0,0,0,148,145,1,0,0,0,149,152,1,0,0,0,150,
+  	148,1,0,0,0,150,151,1,0,0,0,151,17,1,0,0,0,152,150,1,0,0,0,153,154,5,
+  	22,0,0,154,155,5,8,0,0,155,157,5,18,0,0,156,158,3,20,10,0,157,156,1,0,
+  	0,0,157,158,1,0,0,0,158,159,1,0,0,0,159,160,5,19,0,0,160,19,1,0,0,0,161,
+  	166,3,16,8,0,162,163,5,17,0,0,163,165,3,16,8,0,164,162,1,0,0,0,165,168,
+  	1,0,0,0,166,164,1,0,0,0,166,167,1,0,0,0,167,21,1,0,0,0,168,166,1,0,0,
+  	0,169,170,3,4,2,0,170,171,5,8,0,0,171,23,1,0,0,0,172,177,3,22,11,0,173,
+  	174,5,17,0,0,174,176,3,22,11,0,175,173,1,0,0,0,176,179,1,0,0,0,177,175,
+  	1,0,0,0,177,178,1,0,0,0,178,25,1,0,0,0,179,177,1,0,0,0,180,181,5,7,0,
+  	0,181,182,5,18,0,0,182,183,5,8,0,0,183,184,5,19,0,0,184,185,3,28,14,0,
+  	185,27,1,0,0,0,186,187,3,30,15,0,187,188,5,16,0,0,188,29,1,0,0,0,189,
+  	190,3,4,2,0,190,191,5,8,0,0,191,192,5,18,0,0,192,193,3,24,12,0,193,194,
+  	5,19,0,0,194,201,1,0,0,0,195,196,3,4,2,0,196,197,5,8,0,0,197,198,5,18,
+  	0,0,198,199,5,19,0,0,199,201,1,0,0,0,200,189,1,0,0,0,200,195,1,0,0,0,
+  	201,31,1,0,0,0,202,204,3,10,5,0,203,202,1,0,0,0,204,205,1,0,0,0,205,203,
+  	1,0,0,0,205,206,1,0,0,0,206,33,1,0,0,0,207,208,5,20,0,0,208,209,3,32,
+  	16,0,209,210,5,21,0,0,210,35,1,0,0,0,211,215,3,34,17,0,212,213,5,20,0,
+  	0,213,215,5,21,0,0,214,211,1,0,0,0,214,212,1,0,0,0,215,37,1,0,0,0,216,
+  	217,3,30,15,0,217,218,3,36,18,0,218,39,1,0,0,0,18,45,55,62,64,69,74,79,
+  	93,103,134,148,150,157,166,177,200,205,214
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -746,8 +748,16 @@ tree::TerminalNode* relcgrammarParser::AssignmentContext::EQUAL() {
   return getToken(relcgrammarParser::EQUAL, 0);
 }
 
-relcgrammarParser::ExpContext* relcgrammarParser::AssignmentContext::exp() {
-  return getRuleContext<relcgrammarParser::ExpContext>(0);
+std::vector<relcgrammarParser::ExpContext *> relcgrammarParser::AssignmentContext::exp() {
+  return getRuleContexts<relcgrammarParser::ExpContext>();
+}
+
+relcgrammarParser::ExpContext* relcgrammarParser::AssignmentContext::exp(size_t i) {
+  return getRuleContext<relcgrammarParser::ExpContext>(i);
+}
+
+tree::TerminalNode* relcgrammarParser::AssignmentContext::MULT() {
+  return getToken(relcgrammarParser::MULT, 0);
 }
 
 
@@ -775,13 +785,36 @@ relcgrammarParser::AssignmentContext* relcgrammarParser::assignment() {
     exitRule();
   });
   try {
-    enterOuterAlt(_localctx, 1);
-    setState(95);
-    match(relcgrammarParser::ID);
-    setState(96);
-    match(relcgrammarParser::EQUAL);
-    setState(97);
-    exp(0);
+    setState(103);
+    _errHandler->sync(this);
+    switch (_input->LA(1)) {
+      case relcgrammarParser::ID: {
+        enterOuterAlt(_localctx, 1);
+        setState(95);
+        match(relcgrammarParser::ID);
+        setState(96);
+        match(relcgrammarParser::EQUAL);
+        setState(97);
+        exp(0);
+        break;
+      }
+
+      case relcgrammarParser::MULT: {
+        enterOuterAlt(_localctx, 2);
+        setState(98);
+        antlrcpp::downCast<AssignmentContext *>(_localctx)->ptrderef = match(relcgrammarParser::MULT);
+        setState(99);
+        antlrcpp::downCast<AssignmentContext *>(_localctx)->assignExp = exp(0);
+        setState(100);
+        match(relcgrammarParser::EQUAL);
+        setState(101);
+        exp(0);
+        break;
+      }
+
+    default:
+      throw NoViableAltException(this);
+    }
    
   }
   catch (RecognitionException &e) {
@@ -841,13 +874,13 @@ relcgrammarParser::InitializationContext* relcgrammarParser::initialization() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(99);
+    setState(105);
     type();
-    setState(100);
+    setState(106);
     match(relcgrammarParser::ID);
-    setState(101);
+    setState(107);
     match(relcgrammarParser::EQUAL);
-    setState(102);
+    setState(108);
     exp(0);
    
   }
@@ -969,95 +1002,95 @@ relcgrammarParser::ExpContext* relcgrammarParser::exp(int precedence) {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(128);
+    setState(134);
     _errHandler->sync(this);
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 8, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 9, _ctx)) {
     case 1: {
-      setState(105);
+      setState(111);
       match(relcgrammarParser::LPAREN);
-      setState(106);
+      setState(112);
       exp(0);
-      setState(107);
+      setState(113);
       match(relcgrammarParser::RPAREN);
       break;
     }
 
     case 2: {
-      setState(109);
+      setState(115);
       antlrcpp::downCast<ExpContext *>(_localctx)->ptrderef = match(relcgrammarParser::MULT);
-      setState(110);
+      setState(116);
       exp(11);
       break;
     }
 
     case 3: {
-      setState(111);
+      setState(117);
       antlrcpp::downCast<ExpContext *>(_localctx)->ptrgetref = match(relcgrammarParser::T__0);
-      setState(112);
+      setState(118);
       match(relcgrammarParser::ID);
       break;
     }
 
     case 4: {
-      setState(113);
+      setState(119);
       native_call();
       break;
     }
 
     case 5: {
-      setState(114);
+      setState(120);
       match(relcgrammarParser::ID);
-      setState(115);
+      setState(121);
       match(relcgrammarParser::LPAREN);
-      setState(116);
+      setState(122);
       arguments_list();
-      setState(117);
+      setState(123);
       match(relcgrammarParser::RPAREN);
       break;
     }
 
     case 6: {
-      setState(119);
+      setState(125);
       match(relcgrammarParser::ID);
-      setState(120);
+      setState(126);
       match(relcgrammarParser::LPAREN);
-      setState(121);
+      setState(127);
       match(relcgrammarParser::RPAREN);
       break;
     }
 
     case 7: {
-      setState(122);
+      setState(128);
       match(relcgrammarParser::ID);
       break;
     }
 
     case 8: {
-      setState(123);
+      setState(129);
       match(relcgrammarParser::LONG_LITERAL);
       break;
     }
 
     case 9: {
-      setState(124);
+      setState(130);
       match(relcgrammarParser::INT_LITERAL);
       break;
     }
 
     case 10: {
-      setState(125);
+      setState(131);
       match(relcgrammarParser::FLOAT_LITERAL);
       break;
     }
 
     case 11: {
-      setState(126);
+      setState(132);
       match(relcgrammarParser::CHAR);
       break;
     }
 
     case 12: {
-      setState(127);
+      setState(133);
       match(relcgrammarParser::STRING);
       break;
     }
@@ -1066,26 +1099,26 @@ relcgrammarParser::ExpContext* relcgrammarParser::exp(int precedence) {
       break;
     }
     _ctx->stop = _input->LT(-1);
-    setState(144);
+    setState(150);
     _errHandler->sync(this);
-    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 10, _ctx);
+    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 11, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
       if (alt == 1) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        setState(142);
+        setState(148);
         _errHandler->sync(this);
-        switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 9, _ctx)) {
+        switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 10, _ctx)) {
         case 1: {
           _localctx = _tracker.createInstance<ExpContext>(parentContext, parentState);
           pushNewRecursionContext(_localctx, startState, RuleExp);
-          setState(130);
+          setState(136);
 
           if (!(precpred(_ctx, 15))) throw FailedPredicateException(this, "precpred(_ctx, 15)");
-          setState(131);
+          setState(137);
           match(relcgrammarParser::MULT);
-          setState(132);
+          setState(138);
           exp(16);
           break;
         }
@@ -1093,12 +1126,12 @@ relcgrammarParser::ExpContext* relcgrammarParser::exp(int precedence) {
         case 2: {
           _localctx = _tracker.createInstance<ExpContext>(parentContext, parentState);
           pushNewRecursionContext(_localctx, startState, RuleExp);
-          setState(133);
+          setState(139);
 
           if (!(precpred(_ctx, 14))) throw FailedPredicateException(this, "precpred(_ctx, 14)");
-          setState(134);
+          setState(140);
           match(relcgrammarParser::DIV);
-          setState(135);
+          setState(141);
           exp(15);
           break;
         }
@@ -1106,12 +1139,12 @@ relcgrammarParser::ExpContext* relcgrammarParser::exp(int precedence) {
         case 3: {
           _localctx = _tracker.createInstance<ExpContext>(parentContext, parentState);
           pushNewRecursionContext(_localctx, startState, RuleExp);
-          setState(136);
+          setState(142);
 
           if (!(precpred(_ctx, 13))) throw FailedPredicateException(this, "precpred(_ctx, 13)");
-          setState(137);
+          setState(143);
           match(relcgrammarParser::PLUS);
-          setState(138);
+          setState(144);
           exp(14);
           break;
         }
@@ -1119,12 +1152,12 @@ relcgrammarParser::ExpContext* relcgrammarParser::exp(int precedence) {
         case 4: {
           _localctx = _tracker.createInstance<ExpContext>(parentContext, parentState);
           pushNewRecursionContext(_localctx, startState, RuleExp);
-          setState(139);
+          setState(145);
 
           if (!(precpred(_ctx, 12))) throw FailedPredicateException(this, "precpred(_ctx, 12)");
-          setState(140);
+          setState(146);
           match(relcgrammarParser::MINUS);
-          setState(141);
+          setState(147);
           exp(13);
           break;
         }
@@ -1133,9 +1166,9 @@ relcgrammarParser::ExpContext* relcgrammarParser::exp(int precedence) {
           break;
         } 
       }
-      setState(146);
+      setState(152);
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 10, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 11, _ctx);
     }
   }
   catch (RecognitionException &e) {
@@ -1199,22 +1232,22 @@ relcgrammarParser::Native_callContext* relcgrammarParser::native_call() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(147);
+    setState(153);
     match(relcgrammarParser::NATIVE_SCOPE);
-    setState(148);
+    setState(154);
     match(relcgrammarParser::ID);
-    setState(149);
+    setState(155);
     match(relcgrammarParser::LPAREN);
-    setState(151);
+    setState(157);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 4466462) != 0)) {
-      setState(150);
+      setState(156);
       arguments_list();
     }
-    setState(153);
+    setState(159);
     match(relcgrammarParser::RPAREN);
    
   }
@@ -1276,17 +1309,17 @@ relcgrammarParser::Arguments_listContext* relcgrammarParser::arguments_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(155);
+    setState(161);
     exp(0);
-    setState(160);
+    setState(166);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == relcgrammarParser::COMMA) {
-      setState(156);
-      match(relcgrammarParser::COMMA);
-      setState(157);
-      exp(0);
       setState(162);
+      match(relcgrammarParser::COMMA);
+      setState(163);
+      exp(0);
+      setState(168);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -1341,9 +1374,9 @@ relcgrammarParser::ParameterContext* relcgrammarParser::parameter() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(163);
+    setState(169);
     type();
-    setState(164);
+    setState(170);
     match(relcgrammarParser::ID);
    
   }
@@ -1405,17 +1438,17 @@ relcgrammarParser::Parameters_listContext* relcgrammarParser::parameters_list() 
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(166);
+    setState(172);
     parameter();
-    setState(171);
+    setState(177);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == relcgrammarParser::COMMA) {
-      setState(167);
-      match(relcgrammarParser::COMMA);
-      setState(168);
-      parameter();
       setState(173);
+      match(relcgrammarParser::COMMA);
+      setState(174);
+      parameter();
+      setState(179);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -1482,15 +1515,15 @@ relcgrammarParser::Native_func_prototypeContext* relcgrammarParser::native_func_
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(174);
+    setState(180);
     match(relcgrammarParser::NativeProtoDecl);
-    setState(175);
+    setState(181);
     match(relcgrammarParser::LPAREN);
-    setState(176);
+    setState(182);
     match(relcgrammarParser::ID);
-    setState(177);
+    setState(183);
     match(relcgrammarParser::RPAREN);
-    setState(178);
+    setState(184);
     func_prototype();
    
   }
@@ -1543,9 +1576,9 @@ relcgrammarParser::Func_prototypeContext* relcgrammarParser::func_prototype() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(180);
+    setState(186);
     func_declaration();
-    setState(181);
+    setState(187);
     match(relcgrammarParser::SEMI);
    
   }
@@ -1609,26 +1642,11 @@ relcgrammarParser::Func_declarationContext* relcgrammarParser::func_declaration(
     exitRule();
   });
   try {
-    setState(194);
+    setState(200);
     _errHandler->sync(this);
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 14, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 15, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(183);
-      type();
-      setState(184);
-      match(relcgrammarParser::ID);
-      setState(185);
-      match(relcgrammarParser::LPAREN);
-      setState(186);
-      parameters_list();
-      setState(187);
-      match(relcgrammarParser::RPAREN);
-      break;
-    }
-
-    case 2: {
-      enterOuterAlt(_localctx, 2);
       setState(189);
       type();
       setState(190);
@@ -1636,6 +1654,21 @@ relcgrammarParser::Func_declarationContext* relcgrammarParser::func_declaration(
       setState(191);
       match(relcgrammarParser::LPAREN);
       setState(192);
+      parameters_list();
+      setState(193);
+      match(relcgrammarParser::RPAREN);
+      break;
+    }
+
+    case 2: {
+      enterOuterAlt(_localctx, 2);
+      setState(195);
+      type();
+      setState(196);
+      match(relcgrammarParser::ID);
+      setState(197);
+      match(relcgrammarParser::LPAREN);
+      setState(198);
       match(relcgrammarParser::RPAREN);
       break;
     }
@@ -1695,13 +1728,13 @@ relcgrammarParser::ScopeContext* relcgrammarParser::scope() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(197); 
+    setState(203); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(196);
+      setState(202);
       statement();
-      setState(199); 
+      setState(205); 
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while ((((_la & ~ 0x3fULL) == 0) &&
@@ -1761,11 +1794,11 @@ relcgrammarParser::Bordered_scopeContext* relcgrammarParser::bordered_scope() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(201);
+    setState(207);
     match(relcgrammarParser::LCURL);
-    setState(202);
+    setState(208);
     scope();
-    setState(203);
+    setState(209);
     match(relcgrammarParser::RCURL);
    
   }
@@ -1821,21 +1854,21 @@ relcgrammarParser::Func_scopeContext* relcgrammarParser::func_scope() {
     exitRule();
   });
   try {
-    setState(208);
+    setState(214);
     _errHandler->sync(this);
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 16, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 17, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(205);
+      setState(211);
       bordered_scope();
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
-      setState(206);
+      setState(212);
       match(relcgrammarParser::LCURL);
-      setState(207);
+      setState(213);
       match(relcgrammarParser::RCURL);
       break;
     }
@@ -1894,9 +1927,9 @@ relcgrammarParser::Func_bodyContext* relcgrammarParser::func_body() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(210);
+    setState(216);
     func_declaration();
-    setState(211);
+    setState(217);
     func_scope();
    
   }
