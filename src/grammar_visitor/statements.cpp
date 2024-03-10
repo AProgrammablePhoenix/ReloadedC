@@ -52,11 +52,11 @@ std::pair<AssignmentDestData, std::shared_ptr<ExpNode>> gvisitor::visitAssignmen
         if (!is_implicit_convertible(exp->getRetType(), vdata._tinfo)) {
             report_err(fmt::format("can't assign a value of type '{}' to a variable of type '{}'", exp->getRetType()._type, vdata._tinfo._type), vname_line);
         }
-        else if (vdata._tinfo._type != exp->getRetType()._type) {
-            exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), vdata._tinfo);
-        }
         else if (vdata._tinfo._isconst) {
             report_err(fmt::format("assignment of read-only variable '{}'", vname), vname_line);
+        }
+        else if (vdata._tinfo._type != exp->getRetType()._type) {
+            exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), vdata._tinfo);
         }
 
         return std::make_pair(AssignmentDestData(vname), exp);
@@ -70,9 +70,37 @@ std::pair<AssignmentDestData, std::shared_ptr<ExpNode>> gvisitor::visitAssignmen
                 raw_dest_exp->getStart()->getLine()
             );
         }
-
+        std::shared_ptr<ExpNode> dest_exp = visitExp(raw_dest_exp);
         std::shared_ptr<ExpNode> exp = visitExp(ctx->exp()[1]);
-        return std::make_pair(AssignmentDestData(visitExp(raw_dest_exp)), exp);
+
+        const _typeinfo_t exp_type = exp->getRetType();
+        const _typeinfo_t ptr_underlying_type = *dest_exp->getRetType().ptrderef_tinfo;
+
+        if (!is_implicit_convertible(exp_type, ptr_underlying_type)) {
+            report_err(
+                fmt::format(
+                    "cannot assign a value of type '{}' to a variable stored in a pointer of type '{}'",
+                    exp->getRetType()._type,
+                    dest_exp->getRetType()._type
+                ),
+                ctx->ptrderef->getLine()
+            );
+        }
+        else if (ptr_underlying_type._isconst) {
+            report_err(
+                fmt::format(
+                    "Cannot assign a value to pointer to const '{}'",
+                    raw_dest_exp->getText()
+                ),
+                ctx->ptrderef->getLine()
+            );
+        }
+        else if (exp_type._type != ptr_underlying_type._type) {
+            exp = std::make_shared<ConversionNode>(exp->getline(), std::move(exp), ptr_underlying_type);
+        }
+
+
+        return std::make_pair(AssignmentDestData(dest_exp), exp);
     }
 }
 std::pair<std::string, std::shared_ptr<ExpNode>> gvisitor::visitInitialization(relcgrammarParser::InitializationContext* ctx) {
